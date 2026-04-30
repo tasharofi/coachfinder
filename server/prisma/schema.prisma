@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// --- Enums ---
+
+enum CoachStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum SessionMode {
+  IN_PERSON
+  ONLINE
+  BOTH
+}
+
+enum ContactRequestStatus {
+  NEW
+  SENT
+  RESOLVED
+}
+
+// --- Models ---
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String?
+  googleId      String?        @unique
+  name          String
+  avatar        String?
+  slug          String         @unique
+  isLearner     Boolean        @default(true)
+  isCoach       Boolean        @default(false)
+  isAdmin       Boolean        @default(false)
+  emailVerified Boolean        @default(false)
+  phone         String?
+  suspended     Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  coachProfile  CoachProfile?
+}
+
+model CoachProfile {
+  id              String           @id @default(uuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          CoachStatus      @default(DRAFT)
+  headline        String           @default("")
+  bio             String           @default("")
+  hourlyRate      Float            @default(0)
+  sessionMode     SessionMode      @default(BOTH)
+  suburb          String           @default("")
+  state           String           @default("")
+  postcode        String           @default("")
+  lat             Float?
+  lng             Float?
+  serviceRadius   String           @default("")
+  yearsExp        Int              @default(0)
+  certifications  String           @default("")
+  linkedinUrl     String           @default("")
+  phone           String           @default("")
+  email           String           @default("")
+  availability    String           @default("[]")
+  skills          CoachSkill[]
+  contactRequests ContactRequest[]
+  pendingEdits    PendingProfileEdit[]
+  reports         ProfileReport[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+model Skill {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  enabled     Boolean      @default(true)
+  parentGroup String       @default("")
+  isProposed  Boolean      @default(false)
+  proposedBy  String?
+  coaches     CoachSkill[]
+  aliases     SkillAlias[]
+}
+
+model SkillAlias {
+  id      String @id @default(uuid())
+  skillId String
+  skill   Skill  @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  alias   String
+
+  @@unique([skillId, alias])
+}
+
+model CoachSkill {
+  id             String       @id @default(uuid())
+  coachProfileId String
+  coachProfile   CoachProfile @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+  skillId        String
+  skill          Skill        @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([coachProfileId, skillId])
+}
+
+model ContactRequest {
+  id              String               @id @default(uuid())
+  coachProfileId  String
+  coachProfile    CoachProfile         @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+  learnerUserId   String?
+  learnerName     String
+  learnerEmail    String
+  learnerPhone    String?
+  preferredMode   String               @default("EITHER")
+  preferredDays   String               @default("[]")
+  preferredTimes  String               @default("[]")
+  message         String               @default("")
+  preferredSuburb String?
+  status          ContactRequestStatus @default(NEW)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+}
+
+model PendingProfileEdit {
+  id              String       @id @default(uuid())
+  coachProfileId  String
+  coachProfile    CoachProfile @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+  changes         String       // JSON blob of proposed field changes
+  status          String       @default("PENDING") // PENDING | APPROVED | REJECTED
+  adminNotes      String       @default("")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+}
+
+model ProfileReport {
+  id              String       @id @default(uuid())
+  coachProfileId  String
+  coachProfile    CoachProfile @relation(fields: [coachProfileId], references: [id], onDelete: Cascade)
+  reporterUserId  String?
+  reason          String       // inappropriate | misleading | spam | offensive_image | wrong_skill
+  details         String       @default("")
+  status          String       @default("NEW") // NEW | REVIEWED | DISMISSED
+  adminNotes      String       @default("")
+  createdAt       DateTime     @default(now())
+}
+

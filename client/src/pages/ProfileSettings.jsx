@@ -1,0 +1,629 @@
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import {
+    updateUserProfile, updateCoachProfile, getCoachStatus, getMyPendingEdits,
+    uploadPhoto, resolveSkill,
+} from '../services/api';
+import SuburbAutocomplete from '../components/SuburbAutocomplete';
+import AvailabilityPicker from '../components/AvailabilityPicker';
+import SkillAutocomplete from '../components/SkillAutocomplete';
+
+const STATUS_CONFIG = {
+    DRAFT: { label: 'Draft', className: 'draft', icon: '📝', message: 'Your coach application is saved as a draft.' },
+    PENDING: { label: 'Under Review', className: 'pending', icon: '⏳', message: 'Your coach profile is under review and is not live yet.' },
+    APPROVED: { label: 'Live', className: 'approved', icon: '✅', message: 'Your coach profile is live and visible to learners.' },
+    REJECTED: { label: 'Not Approved', className: 'rejected', icon: '❌', message: 'Your coach application was not approved.' },
+    SUSPENDED: { label: 'Suspended', className: 'suspended', icon: '🚫', message: 'Your coach profile has been suspended. Contact support.' },
+};
+
+const SESSION_MODE_LABELS = { IN_PERSON: 'In Person', ONLINE: 'Online', BOTH: 'Both' };
+
+export default function ProfileSettings() {
+    const { user, isCoach, refreshUser } = useAuth();
+    const navigate = useNavigate();
+
+    const [tab, setTab] = useState('personal');
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [toast, setToast] = useState(null);
+
+    // User-level fields
+    const [personal, setPersonal] = useState({ name: '', phone: '', avatar: '' });
+    const [photoPreview, setPhotoPreview] = useState(null);
+    const [uploading, setUploading] = useState(false);
+
+    // Coach profile fields
+    const [coachProfile, setCoachProfile] = useState(null);
+    const [coachForm, setCoachForm] = useState({
+        headline: '', bio: '', skillId: '', skillText: '',
+        sessionMode: 'BOTH', suburb: '', state: '', postcode: '',
+        lat: null, lng: null, serviceRadius: '',
+        hourlyRate: '', yearsExp: '', certifications: '', linkedinUrl: '',
+        phone: '', email: '', availability: [],
+    });
+    const [pendingEdits, setPendingEdits] = useState([]);
+
+    useEffect(() => {
+        if (!user) { navigate('/login'); return; }
+        loadData();
+    }, [user]);
+
+    const loadData = async () => {
+        setLoading(true);
+        try {
+            setPersonal({
+                name: user.name || '',
+                phone: user.phone || '',
+                avatar: user.avatar || '',
+            });
+            setPhotoPreview(user.avatar ? (user.avatar.startsWith('http') ? user.avatar : `http://localhost:3001${user.avatar}`) : null);
+
+            if (isCoach) {
+                const [statusData, pendingData] = await Promise.all([
+                    getCoachStatus().catch(() => ({ hasProfile: false })),
+                    getMyPendingEdits().catch(() => ({ pendingEdits: [] })),
+                ]);
+
+                if (statusData.hasProfile && statusData.profile) {
+                    const p = statusData.profile;
+                    setCoachProfile(p);
+                    setCoachForm({
+                        headline: p.headline || '', bio: p.bio || '',
+                        skillId: p.skills?.[0]?.skillId || '',
+                        skillText: p.skills?.[0]?.skill?.name || '',
+                        sessionMode: p.sessionMode || 'BOTH',
+                        suburb: p.suburb || '', state: p.state || '', postcode: p.postcode || '',
+                        lat: p.lat, lng: p.lng, serviceRadius: p.serviceRadius || '',
+                        hourlyRate: p.hourlyRate || '', yearsExp: p.yearsExp || '',
+                        certifications: p.certifications || '', linkedinUrl: p.linkedinUrl || '',
+                        phone: p.phone || '', email: p.email || user?.email || '',
+                        availability: (() => { try { return JSON.parse(p.availability || '[]'); } catch { return []; } })(),
+                    });
+                }
+
+                setPendingEdits(pendingData.pendingEdits || []);
+            }
+        } catch (err) {
+            console.error('Load profile data error:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 4000);
+    };
+
+    // --- Personal Info ---
+    const handlePhotoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setUploading(true);
+        try {
+            const data = await uploadPhoto(file);
+            const url = `http://localhost:3001${data.url}`;
+            setPhotoPreview(url);
+            await updateUserProfile({ avatar: data.url });
+            await refreshUser();
+            showToast('Photo updated');
+        } catch (err) {
+            showToast('Photo upload failed: ' + err.message, 'error');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const savePersonal = async () => {
+        setSaving(true);
+        try {
+            await updateUserProfile({
+                name: personal.name,
+                phone: personal.phone,
+            });
+            await refreshUser();
+            showToast('Personal info updated');
+        } catch (err) {
+            showToast(err.message, 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // --- Coach Profile (sensitive fields) ---
+    const saveCoachProfile = async () => {
+        setSaving(true);
+        try {
+            let resolvedSkillId = coachForm.skillId;
+            if (coachForm.skillText && !coachForm.skillId) {
+                try {
+                    const result = await resolveSkill(coachForm.skillText);
+                    resolvedSkillId = result.skill?.id || '';
+                } catch { /* continue */ }
+            }
+
+            const response = await updateCoachProfile({
+                headline: coachForm.headline,
+                bio: coachForm.bio,
+                skillId: resolvedSkillId || undefined,
+            });
+
+            if (response.pendingFields?.length > 0) {
+                showToast('Changes submitted for review. Your current live profile remains visible.', 'info');
+            } else {
+                showToast('Coach profile updated');
+            }
+
+            // Refresh pending edits
+            const pendingData = await getMyPendingEdits().catch(() => ({ pendingEdits: [] }));
+            setPendingEdits(pendingData.pendingEdits || []);
+            await refreshUser();
+        } catch (err) {
+            showToast(err.message, 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // --- Availability & Pricing (instant save) ---
+    const saveAvailability = async () => {
+        setSaving(true);
+        try {
+            await updateCoachProfile({
+                availability: JSON.stringify(coachForm.availability),
+                hourlyRate: parseFloat(coachForm.hourlyRate) || 0,
+                yearsExp: parseInt(coachForm.yearsExp) || 0,
+                sessionMode: coachForm.sessionMode,
+                suburb: coachForm.suburb,
+                state: coachForm.state,
+                postcode: coachForm.postcode,
+                lat: coachForm.lat,
+                lng: coachForm.lng,
+                serviceRadius: coachForm.serviceRadius,
+                phone: coachForm.phone,
+                email: coachForm.email,
+            });
+            await refreshUser();
+            showToast('Availability & pricing updated');
+        } catch (err) {
+            showToast(err.message, 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // --- Certifications & Links (pending review) ---
+    const saveCertifications = async () => {
+        setSaving(true);
+        try {
+            const response = await updateCoachProfile({
+                certifications: coachForm.certifications,
+                linkedinUrl: coachForm.linkedinUrl,
+            });
+
+            if (response.pendingFields?.length > 0) {
+                showToast('Changes submitted for review. Your current live profile remains visible.', 'info');
+            } else {
+                showToast('Certifications & links updated');
+            }
+
+            const pendingData = await getMyPendingEdits().catch(() => ({ pendingEdits: [] }));
+            setPendingEdits(pendingData.pendingEdits || []);
+        } catch (err) {
+            showToast(err.message, 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleSuburbChange = (s) => {
+        setCoachForm(prev => ({
+            ...prev, suburb: s.suburb, state: s.state, postcode: s.postcode,
+            lat: s.lat, lng: s.lng,
+        }));
+    };
+
+    if (!user) return null;
+    if (loading) return <div className="loading">Loading profile...</div>;
+
+    const coachStatus = coachProfile?.status || null;
+    const statusInfo = STATUS_CONFIG[coachStatus] || null;
+    const activePending = pendingEdits.filter(pe => pe.status === 'PENDING');
+    const suburbDisplay = coachForm.suburb ? `${coachForm.suburb}, ${coachForm.state} ${coachForm.postcode}` : '';
+
+    const coachTabs = isCoach && coachProfile;
+
+    const TABS = [
+        { id: 'personal', label: 'Personal Info' },
+        ...(coachTabs ? [
+            { id: 'coach', label: 'Coach Profile' },
+            { id: 'availability', label: 'Availability & Pricing' },
+            { id: 'certs', label: 'Certifications & Links' },
+            { id: 'status', label: 'Status' },
+        ] : []),
+    ];
+
+    return (
+        <div className="profile-settings">
+            <div className="profile-settings-header">
+                <h1 className="profile-settings-title">Profile Settings</h1>
+                <p className="profile-settings-subtitle">{user.email}</p>
+            </div>
+
+            {/* Toast notification */}
+            {toast && (
+                <div className={`profile-toast ${toast.type}`}>
+                    {toast.type === 'success' && '✓ '}
+                    {toast.type === 'info' && 'ℹ '}
+                    {toast.type === 'error' && '✕ '}
+                    {toast.message}
+                </div>
+            )}
+
+            {/* Tabs */}
+            <div className="tabs" style={{ marginBottom: 'var(--space-6)' }}>
+                {TABS.map(t => (
+                    <button
+                        key={t.id}
+                        className={`tab ${tab === t.id ? 'active' : ''}`}
+                        onClick={() => setTab(t.id)}
+                    >
+                        {t.label}
+                        {t.id === 'status' && activePending.length > 0 && (
+                            <span className="tab-badge">{activePending.length}</span>
+                        )}
+                    </button>
+                ))}
+            </div>
+
+            {/* Tab Content */}
+            <div className="profile-settings-content">
+                {tab === 'personal' && (
+                    <div className="dashboard-card">
+                        <h2 className="dashboard-card-title">Personal Information</h2>
+                        <div className="apply-form">
+                            {/* Avatar */}
+                            <div className="form-group">
+                                <label className="form-label">Profile Photo</label>
+                                <div className="photo-upload">
+                                    {photoPreview ? (
+                                        <img src={photoPreview} alt="Preview" className="photo-preview" />
+                                    ) : (
+                                        <div className="photo-placeholder">
+                                            {user.name?.charAt(0)?.toUpperCase() || '?'}
+                                        </div>
+                                    )}
+                                    <label className="btn btn-outline btn-sm photo-upload-btn">
+                                        {uploading ? 'Uploading...' : 'Change Photo'}
+                                        <input type="file" accept="image/*" onChange={handlePhotoUpload} hidden />
+                                    </label>
+                                </div>
+                            </div>
+
+                            {/* Name */}
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="profile-name">Full Name</label>
+                                <input
+                                    id="profile-name" className="form-input"
+                                    value={personal.name}
+                                    onChange={(e) => setPersonal({ ...personal, name: e.target.value })}
+                                />
+                            </div>
+
+                            {/* Email (read-only) */}
+                            <div className="form-group">
+                                <label className="form-label">Email</label>
+                                <input className="form-input" value={user.email} disabled
+                                    style={{ opacity: 0.6, cursor: 'not-allowed' }} />
+                            </div>
+
+                            {/* Phone */}
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="profile-phone">Phone</label>
+                                <input
+                                    id="profile-phone" className="form-input" type="tel"
+                                    value={personal.phone}
+                                    onChange={(e) => setPersonal({ ...personal, phone: e.target.value })}
+                                    placeholder="04xx xxx xxx"
+                                />
+                            </div>
+
+                            <button
+                                className="btn btn-primary" onClick={savePersonal}
+                                disabled={saving} style={{ marginTop: 'var(--space-2)' }}
+                            >
+                                {saving ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {tab === 'coach' && coachTabs && (
+                    <div className="dashboard-card">
+                        <h2 className="dashboard-card-title">Public Coach Profile</h2>
+                        <p className="form-helper-text" style={{ marginBottom: 'var(--space-4)' }}>
+                            Changes to headline, bio, and skills may require review before appearing publicly.
+                        </p>
+
+                        {activePending.length > 0 && (
+                            <div className="pending-banner">
+                                <strong>ℹ Pending review:</strong> Some recent changes are under review. Your current live profile remains visible until approved.
+                            </div>
+                        )}
+
+                        <div className="apply-form">
+                            {/* Skill */}
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="edit-skill">What do you teach?</label>
+                                <SkillAutocomplete
+                                    value={coachForm.skillText}
+                                    onChange={(val) => setCoachForm({ ...coachForm, skillText: val, skillId: '' })}
+                                    onSelect={(s) => setCoachForm({ ...coachForm, skillText: s.name, skillId: s.id })}
+                                    placeholder="e.g. Piano, Tennis, Maths..."
+                                    id="edit-skill"
+                                />
+                            </div>
+
+                            {/* Headline */}
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="edit-headline">Headline / Title</label>
+                                <input
+                                    id="edit-headline" className="form-input"
+                                    value={coachForm.headline}
+                                    onChange={(e) => setCoachForm({ ...coachForm, headline: e.target.value })}
+                                    placeholder="e.g. Certified Tennis Coach — All Levels"
+                                    maxLength={120}
+                                />
+                                <span className="form-char-count">{coachForm.headline.length}/120</span>
+                            </div>
+
+                            {/* Bio */}
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="edit-bio">About / Bio</label>
+                                <textarea
+                                    id="edit-bio" className="form-input form-textarea"
+                                    value={coachForm.bio}
+                                    onChange={(e) => setCoachForm({ ...coachForm, bio: e.target.value })}
+                                    placeholder="Tell learners about your experience and teaching style..."
+                                    rows={5} maxLength={2000}
+                                />
+                                <span className="form-char-count">{coachForm.bio.length}/2000</span>
+                            </div>
+
+                            <button
+                                className="btn btn-primary" onClick={saveCoachProfile}
+                                disabled={saving} style={{ marginTop: 'var(--space-2)' }}
+                            >
+                                {saving ? 'Saving...' : 'Save Coach Profile'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {tab === 'availability' && coachTabs && (
+                    <div className="dashboard-card">
+                        <h2 className="dashboard-card-title">Availability & Pricing</h2>
+                        <p className="form-helper-text" style={{ marginBottom: 'var(--space-4)' }}>
+                            These changes save instantly.
+                        </p>
+
+                        <div className="apply-form">
+                            {/* Session mode */}
+                            <div className="form-group">
+                                <label className="form-label">Service Mode</label>
+                                <div className="form-toggle">
+                                    {['IN_PERSON', 'ONLINE', 'BOTH'].map(mode => (
+                                        <button
+                                            key={mode} type="button"
+                                            className={`form-toggle-option ${coachForm.sessionMode === mode ? 'active' : ''}`}
+                                            onClick={() => setCoachForm({ ...coachForm, sessionMode: mode })}
+                                        >
+                                            {SESSION_MODE_LABELS[mode]}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Location */}
+                            <div className="form-group">
+                                <label className="form-label">Location</label>
+                                <SuburbAutocomplete
+                                    value={suburbDisplay}
+                                    onChange={handleSuburbChange}
+                                    placeholder="Start typing your suburb..."
+                                    id="edit-suburb"
+                                />
+                            </div>
+
+                            {/* Service radius */}
+                            {coachForm.sessionMode !== 'ONLINE' && (
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="edit-radius">Service Area</label>
+                                    <input
+                                        id="edit-radius" className="form-input"
+                                        value={coachForm.serviceRadius}
+                                        onChange={(e) => setCoachForm({ ...coachForm, serviceRadius: e.target.value })}
+                                        placeholder="e.g. Eastern Suburbs Sydney"
+                                    />
+                                </div>
+                            )}
+
+                            {/* Price & Experience */}
+                            <div className="form-row">
+                                <div className="form-group" style={{ flex: 1 }}>
+                                    <label className="form-label" htmlFor="edit-rate">Hourly Rate ($)</label>
+                                    <input
+                                        id="edit-rate" className="form-input" type="number" min="1" step="5"
+                                        value={coachForm.hourlyRate}
+                                        onChange={(e) => setCoachForm({ ...coachForm, hourlyRate: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group" style={{ flex: 1 }}>
+                                    <label className="form-label" htmlFor="edit-exp">Years of Experience</label>
+                                    <input
+                                        id="edit-exp" className="form-input" type="number" min="0"
+                                        value={coachForm.yearsExp}
+                                        onChange={(e) => setCoachForm({ ...coachForm, yearsExp: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Contact */}
+                            <div className="form-row">
+                                <div className="form-group" style={{ flex: 1 }}>
+                                    <label className="form-label" htmlFor="edit-email">Contact Email</label>
+                                    <input
+                                        id="edit-email" className="form-input" type="email"
+                                        value={coachForm.email}
+                                        onChange={(e) => setCoachForm({ ...coachForm, email: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group" style={{ flex: 1 }}>
+                                    <label className="form-label" htmlFor="edit-phone">Phone</label>
+                                    <input
+                                        id="edit-phone" className="form-input" type="tel"
+                                        value={coachForm.phone}
+                                        onChange={(e) => setCoachForm({ ...coachForm, phone: e.target.value })}
+                                        placeholder="04xx xxx xxx"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Availability */}
+                            <div className="form-group">
+                                <label className="form-label">Broad Availability</label>
+                                <AvailabilityPicker
+                                    value={coachForm.availability}
+                                    onChange={(v) => setCoachForm({ ...coachForm, availability: v })}
+                                />
+                            </div>
+
+                            <button
+                                className="btn btn-primary" onClick={saveAvailability}
+                                disabled={saving} style={{ marginTop: 'var(--space-2)' }}
+                            >
+                                {saving ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {tab === 'certs' && coachTabs && (
+                    <div className="dashboard-card">
+                        <h2 className="dashboard-card-title">Certifications & Links</h2>
+                        <p className="form-helper-text" style={{ marginBottom: 'var(--space-4)' }}>
+                            Changes to this section may require review before they appear publicly.
+                        </p>
+
+                        {activePending.some(pe => pe.changes?.certifications || pe.changes?.linkedinUrl) && (
+                            <div className="pending-banner">
+                                <strong>ℹ Pending review:</strong> Your recent changes to this section are under review.
+                            </div>
+                        )}
+
+                        <div className="apply-form">
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="edit-certs">Certifications & Qualifications</label>
+                                <textarea
+                                    id="edit-certs" className="form-input form-textarea"
+                                    value={coachForm.certifications}
+                                    onChange={(e) => setCoachForm({ ...coachForm, certifications: e.target.value })}
+                                    placeholder="List any relevant certifications, qualifications, or credentials"
+                                    rows={3} maxLength={1000}
+                                />
+                                <span className="form-char-count">{coachForm.certifications.length}/1000</span>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label" htmlFor="edit-linkedin">LinkedIn / Website</label>
+                                <input
+                                    id="edit-linkedin" className="form-input"
+                                    value={coachForm.linkedinUrl}
+                                    onChange={(e) => setCoachForm({ ...coachForm, linkedinUrl: e.target.value })}
+                                    placeholder="https://linkedin.com/in/you"
+                                />
+                            </div>
+
+                            <button
+                                className="btn btn-primary" onClick={saveCertifications}
+                                disabled={saving} style={{ marginTop: 'var(--space-2)' }}
+                            >
+                                {saving ? 'Saving...' : 'Save Changes'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {tab === 'status' && coachTabs && (
+                    <div className="dashboard-card">
+                        <h2 className="dashboard-card-title">Profile Status</h2>
+
+                        {/* Status banner */}
+                        {statusInfo && (
+                            <div className={`coach-status-banner ${statusInfo.className}`} style={{ marginBottom: 'var(--space-6)' }}>
+                                <div className="coach-status-label">
+                                    <span style={{ marginRight: 'var(--space-2)' }}>{statusInfo.icon}</span>
+                                    {statusInfo.label}
+                                </div>
+                                <p>{statusInfo.message}</p>
+                                {coachStatus === 'APPROVED' && user?.slug && (
+                                    <Link to={`/coach/${user.slug}`} className="btn btn-outline btn-sm" style={{ marginTop: 'var(--space-3)' }}>
+                                        View My Public Profile
+                                    </Link>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Verification badges */}
+                        <div style={{ marginBottom: 'var(--space-6)' }}>
+                            <h3 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>Verification</h3>
+                            <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+                                {coachStatus === 'APPROVED' && (
+                                    <span className="badge badge-success">✓ Coach Verified</span>
+                                )}
+                                {user.emailVerified && (
+                                    <span className="badge badge-info">✓ Email Verified</span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Pending edits */}
+                        {pendingEdits.length > 0 && (
+                            <div>
+                                <h3 style={{ fontSize: 'var(--font-size-sm)', marginBottom: 'var(--space-3)', color: 'var(--color-text-secondary)' }}>Recent Edit History</h3>
+                                <div className="pending-edits-list">
+                                    {pendingEdits.map(pe => (
+                                        <div key={pe.id} className={`pending-edit-item ${pe.status.toLowerCase()}`}>
+                                            <div className="pending-edit-header">
+                                                <span className={`pending-edit-status ${pe.status.toLowerCase()}`}>
+                                                    {pe.status === 'PENDING' ? '⏳ Pending Review' :
+                                                     pe.status === 'APPROVED' ? '✓ Approved' :
+                                                     pe.status === 'REJECTED' ? '✕ Rejected' :
+                                                     pe.status}
+                                                </span>
+                                                <span className="pending-edit-date">
+                                                    {new Date(pe.createdAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </span>
+                                            </div>
+                                            <div className="pending-edit-fields">
+                                                {Object.keys(pe.changes || {}).map(field => (
+                                                    <span key={field} className="pending-edit-field">{field}</span>
+                                                ))}
+                                            </div>
+                                            {pe.adminNotes && (
+                                                <div className="pending-edit-notes">
+                                                    Admin notes: {pe.adminNotes}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
