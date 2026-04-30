@@ -4,6 +4,7 @@ const { authenticate, optionalAuth } = require('../middleware/auth');
 const { track } = require('../utils/analytics');
 const { sendNewApplicationNotification } = require('../utils/email');
 const { getNearbyPostcodes, findSuburb } = require('../utils/suburbs-data');
+const AIService = require('../utils/ai-service');
 
 const router = express.Router();
 
@@ -333,14 +334,44 @@ router.post('/skills/resolve', authenticate, async (req, res) => {
             if (aliasHit) match = aliasHit.skill;
         }
 
+        // 4.5. AI-assisted normalisation
+        if (!match && AIService.isEnabled()) {
+            try {
+                const allSkillNames = await prisma.skill.findMany({
+                    where: { enabled: true, isProposed: false },
+                    select: { id: true, name: true },
+                });
+                const aiResult = await AIService.normaliseCoachSkill(text.trim(), allSkillNames.map(s => s.name));
+
+                if (aiResult && aiResult.canonicalSkillSuggestion && ['high', 'medium'].includes(aiResult.confidence)) {
+                    const aiMatch = allSkillNames.find(s => s.name.toLowerCase() === aiResult.canonicalSkillSuggestion.toLowerCase());
+                    if (aiMatch) {
+                        match = await prisma.skill.findUnique({ where: { id: aiMatch.id } });
+
+                        // Save AI-suggested aliases
+                        if (match && aiResult.suggestedAliases?.length > 0) {
+                            for (const alias of aiResult.suggestedAliases.slice(0, 3)) {
+                                await prisma.skillAlias.upsert({
+                                    where: { skillId_alias: { skillId: match.id, alias: alias.toLowerCase() } },
+                                    create: { skillId: match.id, alias: alias.toLowerCase() },
+                                    update: {},
+                                }).catch(() => {});
+                            }
+                        }
+                    }
+                }
+            } catch (aiErr) {
+                console.error('AI skill normalisation failed (continuing without):', aiErr.message);
+            }
+        }
+
         if (match) {
-            // Also save the entered text as an alias if it's different from the canonical name
             if (match.name.toLowerCase() !== normalised) {
                 await prisma.skillAlias.upsert({
                     where: { skillId_alias: { skillId: match.id, alias: normalised } },
                     create: { skillId: match.id, alias: normalised },
                     update: {},
-                }).catch(() => {}); // ignore if already exists
+                }).catch(() => {});
             }
             return res.json({ matched: true, skill: { id: match.id, name: match.name } });
         }

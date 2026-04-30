@@ -206,3 +206,21 @@ export const reviewReport = (id, notes) =>
 export const dismissReport = (id) =>
     fetch(`${API_URL}/admin/reports/${id}/dismiss`, { method: 'PATCH', headers: getHeaders() }).then(handleResponse);
 
+// AI Helper APIs
+export const getAIStatus = () =>
+    fetch(`${API_URL}/ai/status`).then(handleResponse);
+
+export const parseSearchQuery = (query) =>
+    fetch(`${API_URL}/ai/parse-search`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ query }) }).then(handleResponse);
+
+export const aiImproveBio = (text, context) =>
+    fetch(`${API_URL}/ai/improve-bio`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ text, context }) }).then(handleResponse);
+
+export const aiImproveHeadline = (text, context) =>
+    fetch(`${API_URL}/ai/improve-headline`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ text, context }) }).then(handleResponse);
+
+export const aiSuggestSkills = (context) =>
+    fetch(`${API_URL}/ai/suggest-skills`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ context }) }).then(handleResponse);
+
+export const aiNormaliseSkill = (input, existingSkills) =>
+    fetch(`${API_URL}/ai/normalise-skill`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ input, existingSkills }) }).then(handleResponse);

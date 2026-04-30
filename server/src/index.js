@@ -9,6 +9,7 @@ const contactRoutes = require('./routes/contacts');
 const adminRoutes = require('./routes/admin');
 const suburbRoutes = require('./routes/suburbs');
 const reportRoutes = require('./routes/reports');
+const aiRoutes = require('./routes/ai');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,6 +28,7 @@ app.use('/api/contacts', contactRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/suburbs', suburbRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/ai', aiRoutes);
 
 // File upload endpoint
 const multer = require('multer');

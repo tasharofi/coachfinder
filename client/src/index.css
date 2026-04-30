@@ -2528,3 +2528,157 @@ select.form-input {
   color: #92400e;
 }
 
+/* ============================================
+   AI Helper Styles
+   ============================================ */
+
+/* Hero search hint */
+.hero-search-hint {
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-3);
+  letter-spacing: 0.01em;
+}
+
+/* AI helper button (subtle, secondary) */
+.btn-ai-helper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-ai-helper:hover:not(:disabled) {
+  background: hsl(221, 83%, 53%, 0.06);
+  border-color: var(--color-primary);
+}
+
+.btn-ai-helper:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Form field actions row (char count + AI button) */
+.form-field-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-1);
+}
+
+/* AI suggestion list */
+.ai-suggestions-list {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.ai-suggestions-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+  font-weight: 500;
+}
+
+.ai-suggestion-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-bottom: var(--space-1);
+  transition: all 0.15s ease;
+}
+
+.ai-suggestion-option:hover {
+  background: hsl(221, 83%, 53%, 0.06);
+  border-color: var(--color-primary);
+}
+
+.ai-suggestion-dismiss {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-1) 0;
+}
+
+.ai-suggestion-dismiss:hover {
+  color: var(--color-text-secondary);
+}
+
+/* AI undo button */
+.btn-ai-undo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  margin-top: var(--space-2);
+  transition: all 0.15s ease;
+}
+
+.btn-ai-undo:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-secondary);
+}
+
+/* AI skill tag suggestions */
+.ai-skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.ai-skill-tag {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  background: hsl(221, 83%, 53%, 0.08);
+  border: 1px solid hsl(221, 83%, 53%, 0.2);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ai-skill-tag:hover {
+  background: hsl(221, 83%, 53%, 0.15);
+  border-color: var(--color-primary);
+}
+
+/* AI parsed badge in search results */
+.ai-parsed-badge {
+  display: inline-block;
+  margin-left: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-primary);
+  background: hsl(221, 83%, 53%, 0.08);
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  font-weight: 500;
+}

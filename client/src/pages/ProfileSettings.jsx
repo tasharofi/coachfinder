@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
     updateUserProfile, updateCoachProfile, getCoachStatus, getMyPendingEdits,
-    uploadPhoto, resolveSkill,
+    uploadPhoto, resolveSkill, getAIStatus,
+    aiImproveBio, aiImproveHeadline, aiSuggestSkills,
 } from '../services/api';
 import SuburbAutocomplete from '../components/SuburbAutocomplete';
 import AvailabilityPicker from '../components/AvailabilityPicker';
@@ -44,9 +45,18 @@ export default function ProfileSettings() {
     });
     const [pendingEdits, setPendingEdits] = useState([]);
 
+    // AI helper state
+    const [aiAvailable, setAiAvailable] = useState(false);
+    const [aiLoading, setAiLoading] = useState('');
+    const [headlineSuggestions, setHeadlineSuggestions] = useState(null);
+    const [skillSuggestions, setSkillSuggestions] = useState(null);
+    const [previousBio, setPreviousBio] = useState(null);
+
     useEffect(() => {
         if (!user) { navigate('/login'); return; }
         loadData();
+        // Check AI availability
+        getAIStatus().then(r => setAiAvailable(r.available)).catch(() => setAiAvailable(false));
     }, [user]);
 
     const loadData = async () => {
@@ -224,6 +234,71 @@ export default function ProfileSettings() {
         }));
     };
 
+    // --- AI Helper Handlers ---
+    const handleAIImproveHeadline = async () => {
+        setAiLoading('headline');
+        setHeadlineSuggestions(null);
+        try {
+            const result = await aiImproveHeadline(coachForm.headline, {
+                skillName: coachForm.skillText,
+                yearsExp: coachForm.yearsExp,
+                bio: coachForm.bio,
+            });
+            if (result.suggestions?.length > 0) {
+                setHeadlineSuggestions(result.suggestions);
+            } else {
+                showToast('AI could not generate suggestions right now.', 'info');
+            }
+        } catch {
+            showToast('AI helper is temporarily unavailable.', 'error');
+        } finally {
+            setAiLoading('');
+        }
+    };
+
+    const handleAIImproveBio = async () => {
+        setAiLoading('bio');
+        try {
+            const result = await aiImproveBio(coachForm.bio, {
+                skillName: coachForm.skillText,
+                yearsExp: coachForm.yearsExp,
+                headline: coachForm.headline,
+            });
+            if (result.suggestion) {
+                setPreviousBio(coachForm.bio);
+                setCoachForm(prev => ({ ...prev, bio: result.suggestion }));
+                showToast('Bio improved! Review the changes above.', 'success');
+            } else {
+                showToast('AI could not improve the bio right now.', 'info');
+            }
+        } catch {
+            showToast('AI helper is temporarily unavailable.', 'error');
+        } finally {
+            setAiLoading('');
+        }
+    };
+
+    const handleAISuggestSkills = async () => {
+        setAiLoading('skills');
+        setSkillSuggestions(null);
+        try {
+            const result = await aiSuggestSkills({
+                skillName: coachForm.skillText,
+                headline: coachForm.headline,
+                bio: coachForm.bio,
+            });
+            if (result.suggestions?.length > 0) {
+                setSkillSuggestions(result.suggestions);
+            } else {
+                showToast('AI could not suggest skills right now.', 'info');
+            }
+        } catch {
+            showToast('AI helper is temporarily unavailable.', 'error');
+        } finally {
+            setAiLoading('');
+        }
+    };
+
     if (!user) return null;
     if (loading) return <div className="loading">Loading profile...</div>;
 
@@ -371,11 +446,36 @@ export default function ProfileSettings() {
                                 <input
                                     id="edit-headline" className="form-input"
                                     value={coachForm.headline}
-                                    onChange={(e) => setCoachForm({ ...coachForm, headline: e.target.value })}
+                                    onChange={(e) => { setCoachForm({ ...coachForm, headline: e.target.value }); setHeadlineSuggestions(null); }}
                                     placeholder="e.g. Certified Tennis Coach — All Levels"
                                     maxLength={120}
                                 />
-                                <span className="form-char-count">{coachForm.headline.length}/120</span>
+                                <div className="form-field-actions">
+                                    <span className="form-char-count">{coachForm.headline.length}/120</span>
+                                    {aiAvailable && (
+                                        <button
+                                            type="button" className="btn-ai-helper"
+                                            onClick={handleAIImproveHeadline}
+                                            disabled={aiLoading === 'headline' || !coachForm.headline.trim()}
+                                        >
+                                            {aiLoading === 'headline' ? '✨ Generating...' : '✨ Improve headline with AI'}
+                                        </button>
+                                    )}
+                                </div>
+                                {headlineSuggestions && (
+                                    <div className="ai-suggestions-list">
+                                        <p className="ai-suggestions-label">Choose a headline:</p>
+                                        {headlineSuggestions.map((h, i) => (
+                                            <button
+                                                key={i} type="button" className="ai-suggestion-option"
+                                                onClick={() => { setCoachForm({ ...coachForm, headline: h }); setHeadlineSuggestions(null); }}
+                                            >
+                                                {h}
+                                            </button>
+                                        ))}
+                                        <button type="button" className="ai-suggestion-dismiss" onClick={() => setHeadlineSuggestions(null)}>Dismiss</button>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Bio */}
@@ -388,8 +488,56 @@ export default function ProfileSettings() {
                                     placeholder="Tell learners about your experience and teaching style..."
                                     rows={5} maxLength={2000}
                                 />
-                                <span className="form-char-count">{coachForm.bio.length}/2000</span>
+                                <div className="form-field-actions">
+                                    <span className="form-char-count">{coachForm.bio.length}/2000</span>
+                                    {aiAvailable && (
+                                        <button
+                                            type="button" className="btn-ai-helper"
+                                            onClick={handleAIImproveBio}
+                                            disabled={aiLoading === 'bio' || !coachForm.bio.trim()}
+                                        >
+                                            {aiLoading === 'bio' ? '✨ Improving...' : '✨ Improve bio with AI'}
+                                        </button>
+                                    )}
+                                </div>
+                                {previousBio && (
+                                    <button
+                                        type="button" className="btn-ai-undo"
+                                        onClick={() => { setCoachForm({ ...coachForm, bio: previousBio }); setPreviousBio(null); }}
+                                    >
+                                        ↩ Undo AI change
+                                    </button>
+                                )}
                             </div>
+
+                            {/* AI skill suggestions */}
+                            {aiAvailable && (
+                                <div className="form-group">
+                                    <button
+                                        type="button" className="btn-ai-helper"
+                                        onClick={handleAISuggestSkills}
+                                        disabled={aiLoading === 'skills' || (!coachForm.bio.trim() && !coachForm.headline.trim())}
+                                    >
+                                        {aiLoading === 'skills' ? '✨ Suggesting...' : '✨ Suggest skills with AI'}
+                                    </button>
+                                    {skillSuggestions && (
+                                        <div className="ai-suggestions-list" style={{ marginTop: 'var(--space-2)' }}>
+                                            <p className="ai-suggestions-label">Suggested skills based on your profile:</p>
+                                            <div className="ai-skill-tags">
+                                                {skillSuggestions.map((s, i) => (
+                                                    <button
+                                                        key={i} type="button" className="ai-skill-tag"
+                                                        onClick={() => { setCoachForm({ ...coachForm, skillText: s, skillId: '' }); setSkillSuggestions(null); }}
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            <button type="button" className="ai-suggestion-dismiss" onClick={() => setSkillSuggestions(null)}>Dismiss</button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             <button
                                 className="btn btn-primary" onClick={saveCoachProfile}

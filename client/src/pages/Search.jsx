@@ -31,6 +31,7 @@ export default function Search() {
     const [selectedCoach, setSelectedCoach] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showContact, setShowContact] = useState(false);
+    const [aiParsed, setAiParsed] = useState(searchParams.get('aiParsed') === '1');
 
     const [skill, setSkill] = useState(searchParams.get('skill') || '');
     const [suburb, setSuburb] = useState(searchParams.get('suburb') || '');
@@ -73,6 +74,7 @@ export default function Search() {
 
     const handleSearch = (e) => {
         e.preventDefault();
+        setAiParsed(false);
         const params = new URLSearchParams();
         if (skill) params.set('skill', skill);
         if (suburb) params.set('suburb', suburb);
@@ -146,6 +148,7 @@ export default function Search() {
                     <div className="search-sub-bar">
                         <span className="search-result-count">
                             {loading ? 'Searching...' : `${coaches.length} coach${coaches.length !== 1 ? 'es' : ''} found`}
+                            {aiParsed && !loading && <span className="ai-parsed-badge" title="Smart search understood your phrase">✨ Smart search</span>}
                         </span>
                         <select className="sort-select" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
                             {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
