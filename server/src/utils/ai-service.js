@@ -31,37 +31,49 @@ if (AI_ENABLED) {
 
 const TIMEOUT_MS = 12000;
 
+const AI_MODEL = process.env.AI_MODEL || 'gemini-2.5-flash';
+const FALLBACK_MODEL = 'gemini-2.0-flash-lite';
+
 async function callGemini(prompt, { json = false } = {}) {
     if (!genai) return null;
 
-    try {
-        const config = {};
-        if (json) {
-            config.responseMimeType = 'application/json';
+    const models = [AI_MODEL, FALLBACK_MODEL];
+
+    for (const model of models) {
+        try {
+            const config = {};
+            if (json) {
+                config.responseMimeType = 'application/json';
+            }
+
+            const response = await Promise.race([
+                genai.models.generateContent({
+                    model,
+                    contents: prompt,
+                    config,
+                }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error('AI timeout')), TIMEOUT_MS)),
+            ]);
+
+            const text = response.text?.trim() || '';
+            if (!text) return null;
+
+            if (json) {
+                const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+                return JSON.parse(cleaned);
+            }
+            return text;
+        } catch (err) {
+            const msg = typeof err.message === 'string' ? err.message : JSON.stringify(err.message);
+            const isQuotaError = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota');
+            console.error(`AI Service (${model}):`, isQuotaError ? 'Quota exceeded, trying fallback...' : msg);
+            if (!isQuotaError) return null; // Non-quota error, don't retry
+            // Continue to try fallback model
         }
-
-        const response = await Promise.race([
-            genai.models.generateContent({
-                model: 'gemini-2.0-flash',
-                contents: prompt,
-                config,
-            }),
-            new Promise((_, reject) => setTimeout(() => reject(new Error('AI timeout')), TIMEOUT_MS)),
-        ]);
-
-        const text = response.text?.trim() || '';
-        if (!text) return null;
-
-        if (json) {
-            // Strip markdown code fences if present
-            const cleaned = text.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
-            return JSON.parse(cleaned);
-        }
-        return text;
-    } catch (err) {
-        console.error('AI Service call error:', err.message);
-        return null;
     }
+
+    console.error('AI Service: All models exhausted');
+    return null;
 }
 
 // ---------- Public Methods ----------
