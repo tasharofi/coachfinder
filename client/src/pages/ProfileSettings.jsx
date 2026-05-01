@@ -452,15 +452,14 @@ export default function ProfileSettings() {
                                 />
                                 <div className="form-field-actions">
                                     <span className="form-char-count">{coachForm.headline.length}/120</span>
-                                    {aiAvailable && (
-                                        <button
-                                            type="button" className="btn-ai-helper"
-                                            onClick={handleAIImproveHeadline}
-                                            disabled={aiLoading === 'headline' || !coachForm.headline.trim()}
-                                        >
-                                            {aiLoading === 'headline' ? '✨ Generating...' : '✨ Improve headline with AI'}
-                                        </button>
-                                    )}
+                                    <button
+                                        type="button" className="btn-ai-helper"
+                                        onClick={handleAIImproveHeadline}
+                                        disabled={!aiAvailable || aiLoading === 'headline' || !coachForm.headline.trim()}
+                                        title={!aiAvailable ? 'Configure AI_API_KEY in server .env to enable' : ''}
+                                    >
+                                        {aiLoading === 'headline' ? '✨ Generating...' : !aiAvailable ? '✨ AI not configured' : '✨ Improve headline with AI'}
+                                    </button>
                                 </div>
                                 {headlineSuggestions && (
                                     <div className="ai-suggestions-list">
@@ -490,15 +489,14 @@ export default function ProfileSettings() {
                                 />
                                 <div className="form-field-actions">
                                     <span className="form-char-count">{coachForm.bio.length}/2000</span>
-                                    {aiAvailable && (
-                                        <button
-                                            type="button" className="btn-ai-helper"
-                                            onClick={handleAIImproveBio}
-                                            disabled={aiLoading === 'bio' || !coachForm.bio.trim()}
-                                        >
-                                            {aiLoading === 'bio' ? '✨ Improving...' : '✨ Improve bio with AI'}
-                                        </button>
-                                    )}
+                                    <button
+                                        type="button" className="btn-ai-helper"
+                                        onClick={handleAIImproveBio}
+                                        disabled={!aiAvailable || aiLoading === 'bio' || !coachForm.bio.trim()}
+                                        title={!aiAvailable ? 'Configure AI_API_KEY in server .env to enable' : ''}
+                                    >
+                                        {aiLoading === 'bio' ? '✨ Improving...' : !aiAvailable ? '✨ AI not configured' : '✨ Improve bio with AI'}
+                                    </button>
                                 </div>
                                 {previousBio && (
                                     <button
@@ -511,33 +509,32 @@ export default function ProfileSettings() {
                             </div>
 
                             {/* AI skill suggestions */}
-                            {aiAvailable && (
-                                <div className="form-group">
-                                    <button
-                                        type="button" className="btn-ai-helper"
-                                        onClick={handleAISuggestSkills}
-                                        disabled={aiLoading === 'skills' || (!coachForm.bio.trim() && !coachForm.headline.trim())}
-                                    >
-                                        {aiLoading === 'skills' ? '✨ Suggesting...' : '✨ Suggest skills with AI'}
-                                    </button>
-                                    {skillSuggestions && (
-                                        <div className="ai-suggestions-list" style={{ marginTop: 'var(--space-2)' }}>
-                                            <p className="ai-suggestions-label">Suggested skills based on your profile:</p>
-                                            <div className="ai-skill-tags">
-                                                {skillSuggestions.map((s, i) => (
-                                                    <button
-                                                        key={i} type="button" className="ai-skill-tag"
-                                                        onClick={() => { setCoachForm({ ...coachForm, skillText: s, skillId: '' }); setSkillSuggestions(null); }}
-                                                    >
-                                                        {s}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                            <button type="button" className="ai-suggestion-dismiss" onClick={() => setSkillSuggestions(null)}>Dismiss</button>
+                            <div className="form-group">
+                                <button
+                                    type="button" className="btn-ai-helper"
+                                    onClick={handleAISuggestSkills}
+                                    disabled={!aiAvailable || aiLoading === 'skills' || (!coachForm.bio.trim() && !coachForm.headline.trim())}
+                                    title={!aiAvailable ? 'Configure AI_API_KEY in server .env to enable' : ''}
+                                >
+                                    {aiLoading === 'skills' ? '✨ Suggesting...' : !aiAvailable ? '✨ AI not configured' : '✨ Suggest skills with AI'}
+                                </button>
+                                {skillSuggestions && (
+                                    <div className="ai-suggestions-list" style={{ marginTop: 'var(--space-2)' }}>
+                                        <p className="ai-suggestions-label">Suggested skills based on your profile:</p>
+                                        <div className="ai-skill-tags">
+                                            {skillSuggestions.map((s, i) => (
+                                                <button
+                                                    key={i} type="button" className="ai-skill-tag"
+                                                    onClick={() => { setCoachForm({ ...coachForm, skillText: s, skillId: '' }); setSkillSuggestions(null); }}
+                                                >
+                                                    {s}
+                                                </button>
+                                            ))}
                                         </div>
-                                    )}
-                                </div>
-                            )}
+                                        <button type="button" className="ai-suggestion-dismiss" onClick={() => setSkillSuggestions(null)}>Dismiss</button>
+                                    </div>
+                                )}
+                            </div>
 
                             <button
                                 className="btn btn-primary" onClick={saveCoachProfile}

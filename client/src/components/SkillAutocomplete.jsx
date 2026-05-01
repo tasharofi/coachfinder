@@ -32,7 +32,9 @@ export default function SkillAutocomplete({ value, onChange, onSelect, placehold
 
         if (debounceRef.current) clearTimeout(debounceRef.current);
 
-        if (val.length < 2) {
+        // Don't show autocomplete for short input or long NL phrases
+        const wordCount = val.trim().split(/\s+/).length;
+        if (val.length < 2 || wordCount > 4) {
             setSuggestions([]);
             setShowSuggestions(false);
             return;
@@ -49,7 +51,7 @@ export default function SkillAutocomplete({ value, onChange, onSelect, placehold
             } finally {
                 setLoading(false);
             }
-        }, 200);
+        }, 250);
     };
 
     const handleSelect = (skill) => {

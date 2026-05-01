@@ -14,6 +14,45 @@ function isNaturalLanguageQuery(text) {
     return nlIndicators.test(text);
 }
 
+// Lightweight client-side fallback parser when AI is unavailable
+function extractSearchFields(text) {
+    let query = text.trim();
+
+    // Strip common filler phrases
+    query = query.replace(/^(i'm |i am |i need |i want |find me |looking for |search for |get me )(an? |the )?/i, '');
+
+    // Extract location after prepositions
+    let location = null;
+    const locMatch = query.match(/\b(?:in|near|around|at)\s+(.+)$/i);
+    if (locMatch) {
+        location = locMatch[1].trim();
+        query = query.replace(locMatch[0], '').trim();
+    }
+
+    // Extract session mode
+    let sessionMode = null;
+    if (/\bonline\b/i.test(query)) {
+        sessionMode = 'ONLINE';
+        query = query.replace(/\bonline\b/i, '').trim();
+    } else if (/\bin[- ]person\b/i.test(query)) {
+        sessionMode = 'IN_PERSON';
+        query = query.replace(/\bin[- ]person\b/i, '').trim();
+    }
+
+    // Strip trailing filler words to extract core skill
+    query = query.replace(/\b(coach|tutor|teacher|instructor|lessons?|class(?:es)?|for (?:my )?(?:kids?|children|beginners?))\b/gi, '').trim();
+    // Strip leading adjectives
+    query = query.replace(/^(affordable|cheap|premium|best|good|great|experienced|beginner|advanced)\s+/i, '').trim();
+    // Clean up extra spaces
+    query = query.replace(/\s+/g, ' ').trim();
+
+    return {
+        skill: query || null,
+        suburb: location,
+        sessionMode,
+    };
+}
+
 export default function Landing() {
     const navigate = useNavigate();
     const [skill, setSkill] = useState('');
@@ -40,13 +79,22 @@ export default function Landing() {
                     return;
                 }
             } catch {
-                // AI failed — fall through to normal search
+                // AI failed — fall through to fallback parser
             } finally {
                 setSearching(false);
             }
+
+            // Fallback: lightweight client-side extraction
+            const extracted = extractSearchFields(skill);
+            if (extracted.skill) params.set('skill', extracted.skill);
+            if (extracted.suburb) params.set('suburb', extracted.suburb);
+            else if (suburb) params.set('suburb', suburb);
+            if (extracted.sessionMode) params.set('sessionMode', extracted.sessionMode);
+            navigate(`/search?${params.toString()}`);
+            return;
         }
 
-        // Normal search flow
+        // Normal search flow (simple keywords)
         if (skill) params.set('skill', skill);
         if (suburb) params.set('suburb', suburb);
         navigate(`/search?${params.toString()}`);
