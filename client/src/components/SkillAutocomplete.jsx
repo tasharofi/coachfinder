@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { searchSkills } from '../services/api';
 
-export default function SkillAutocomplete({ value, onChange, onSelect, placeholder, id, className }) {
+export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect }) {
     const [query, setQuery] = useState(value || '');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -55,18 +55,38 @@ export default function SkillAutocomplete({ value, onChange, onSelect, placehold
     };
 
     const handleSelect = (skill) => {
-        // Use the label as the search term (could be alias or canonical)
-        // Backend search resolution maps it to the same skill cluster
         const searchTerm = skill.label || skill.name;
-        setQuery(searchTerm);
+        if (clearOnSelect) {
+            setQuery('');
+            onChange && onChange('');
+        } else {
+            setQuery(searchTerm);
+            onChange && onChange(searchTerm);
+        }
         setShowSuggestions(false);
         setSuggestions([]);
         setActiveIndex(-1);
-        onChange && onChange(searchTerm);
         onSelect && onSelect({ ...skill, name: searchTerm, resolvedName: skill.name });
     };
 
     const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            if (showSuggestions && activeIndex >= 0 && suggestions[activeIndex]) {
+                e.preventDefault();
+                handleSelect(suggestions[activeIndex]);
+            } else if (query.trim() && onCustomSubmit) {
+                e.preventDefault();
+                onCustomSubmit(query.trim());
+                if (clearOnSelect) {
+                    setQuery('');
+                    onChange && onChange('');
+                }
+                setShowSuggestions(false);
+                setSuggestions([]);
+            }
+            return;
+        }
+
         if (!showSuggestions || suggestions.length === 0) return;
 
         if (e.key === 'ArrowDown') {
@@ -75,9 +95,6 @@ export default function SkillAutocomplete({ value, onChange, onSelect, placehold
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
             setActiveIndex(prev => Math.max(prev - 1, -1));
-        } else if (e.key === 'Enter' && activeIndex >= 0) {
-            e.preventDefault();
-            handleSelect(suggestions[activeIndex]);
         } else if (e.key === 'Escape') {
             setShowSuggestions(false);
         }

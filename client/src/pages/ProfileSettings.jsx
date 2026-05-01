@@ -37,12 +37,14 @@ export default function ProfileSettings() {
     // Coach profile fields
     const [coachProfile, setCoachProfile] = useState(null);
     const [coachForm, setCoachForm] = useState({
-        headline: '', bio: '', skillId: '', skillText: '',
+        headline: '', bio: '',
         sessionMode: 'BOTH', suburb: '', state: '', postcode: '',
         lat: null, lng: null, serviceRadius: '',
         hourlyRate: '', yearsExp: '', certifications: '', linkedinUrl: '',
         phone: '', email: '', availability: [],
     });
+    const [selectedSkills, setSelectedSkills] = useState([]);
+    const [skillInput, setSkillInput] = useState('');
     const [pendingEdits, setPendingEdits] = useState([]);
 
     // AI helper state
@@ -80,8 +82,6 @@ export default function ProfileSettings() {
                     setCoachProfile(p);
                     setCoachForm({
                         headline: p.headline || '', bio: p.bio || '',
-                        skillId: p.skills?.[0]?.skillId || '',
-                        skillText: p.skills?.[0]?.skill?.name || '',
                         sessionMode: p.sessionMode || 'BOTH',
                         suburb: p.suburb || '', state: p.state || '', postcode: p.postcode || '',
                         lat: p.lat, lng: p.lng, serviceRadius: p.serviceRadius || '',
@@ -90,6 +90,13 @@ export default function ProfileSettings() {
                         phone: p.phone || '', email: p.email || user?.email || '',
                         availability: (() => { try { return JSON.parse(p.availability || '[]'); } catch { return []; } })(),
                     });
+                    // Load existing skills as chips
+                    if (p.skills?.length > 0) {
+                        setSelectedSkills(p.skills.map(cs => ({
+                            id: cs.skill?.id || cs.skillId,
+                            name: cs.skill?.name || 'Unknown',
+                        })));
+                    }
                 }
 
                 setPendingEdits(pendingData.pendingEdits || []);
@@ -141,22 +148,15 @@ export default function ProfileSettings() {
         }
     };
 
-    // --- Coach Profile (sensitive fields) ---
     const saveCoachProfile = async () => {
         setSaving(true);
         try {
-            let resolvedSkillId = coachForm.skillId;
-            if (coachForm.skillText && !coachForm.skillId) {
-                try {
-                    const result = await resolveSkill(coachForm.skillText);
-                    resolvedSkillId = result.skill?.id || '';
-                } catch { /* continue */ }
-            }
+            const skillIds = selectedSkills.map(s => s.id).filter(Boolean);
 
             const response = await updateCoachProfile({
                 headline: coachForm.headline,
                 bio: coachForm.bio,
-                skillId: resolvedSkillId || undefined,
+                skillId: skillIds.length > 0 ? skillIds : undefined,
             });
 
             if (response.pendingFields?.length > 0) {
@@ -240,7 +240,7 @@ export default function ProfileSettings() {
         setHeadlineSuggestions(null);
         try {
             const result = await aiImproveHeadline(coachForm.headline, {
-                skillName: coachForm.skillText,
+                skillName: selectedSkills.map(s => s.name).join(', '),
                 yearsExp: coachForm.yearsExp,
                 bio: coachForm.bio,
             });
@@ -260,7 +260,7 @@ export default function ProfileSettings() {
         setAiLoading('bio');
         try {
             const result = await aiImproveBio(coachForm.bio, {
-                skillName: coachForm.skillText,
+                skillName: selectedSkills.map(s => s.name).join(', '),
                 yearsExp: coachForm.yearsExp,
                 headline: coachForm.headline,
             });
@@ -283,12 +283,16 @@ export default function ProfileSettings() {
         setSkillSuggestions(null);
         try {
             const result = await aiSuggestSkills({
-                skillName: coachForm.skillText,
+                skillName: selectedSkills.map(s => s.name).join(', '),
                 headline: coachForm.headline,
                 bio: coachForm.bio,
             });
             if (result.suggestions?.length > 0) {
-                setSkillSuggestions(result.suggestions);
+                // Filter out already-selected skills
+                const existing = new Set(selectedSkills.map(s => s.name.toLowerCase()));
+                const filtered = result.suggestions.filter(s => !existing.has(s.toLowerCase()));
+                setSkillSuggestions(filtered.length > 0 ? filtered : null);
+                if (filtered.length === 0) showToast('All suggested skills are already added.', 'info');
             } else {
                 showToast('AI could not suggest skills right now.', 'info');
             }
@@ -297,6 +301,55 @@ export default function ProfileSettings() {
         } finally {
             setAiLoading('');
         }
+    };
+
+    // --- Skill chip handlers ---
+    const addSkillByName = async (name) => {
+        if (!name.trim()) return;
+        // Check for duplicate
+        if (selectedSkills.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+            showToast('This skill is already added.', 'info');
+            return;
+        }
+        try {
+            const result = await resolveSkill(name);
+            if (result.skill) {
+                // Check duplicate by ID
+                if (selectedSkills.some(s => s.id === result.skill.id)) {
+                    showToast('This skill is already added.', 'info');
+                    return;
+                }
+                setSelectedSkills(prev => [...prev, { id: result.skill.id, name: result.skill.name }]);
+            }
+        } catch {
+            showToast('Could not add skill.', 'error');
+        }
+    };
+
+    const removeSkill = (skillId) => {
+        setSelectedSkills(prev => prev.filter(s => s.id !== skillId));
+    };
+
+    const handleSkillAutocompleteSelect = (s) => {
+        if (!s.id) return;
+        if (selectedSkills.some(sk => sk.id === s.id)) {
+            showToast('This skill is already added.', 'info');
+            return;
+        }
+        setSelectedSkills(prev => [...prev, { id: s.id, name: s.resolvedName || s.name }]);
+    };
+
+    const handleAddAISuggestion = async (name) => {
+        await addSkillByName(name);
+        setSkillSuggestions(prev => prev ? prev.filter(s => s !== name) : null);
+    };
+
+    const handleIgnoreAISuggestion = (name) => {
+        setSkillSuggestions(prev => {
+            if (!prev) return null;
+            const filtered = prev.filter(s => s !== name);
+            return filtered.length > 0 ? filtered : null;
+        });
     };
 
     if (!user) return null;
@@ -428,16 +481,63 @@ export default function ProfileSettings() {
                         )}
 
                         <div className="apply-form">
-                            {/* Skill */}
+                            {/* Skills */}
                             <div className="form-group">
-                                <label className="form-label" htmlFor="edit-skill">What do you teach?</label>
+                                <label className="form-label">What do you teach?</label>
+                                <p className="form-helper-text" style={{ marginBottom: 'var(--space-2)' }}>
+                                    Add the skills, subjects or activities you coach. These help learners find you.
+                                </p>
+
+                                {/* Selected skill chips */}
+                                {selectedSkills.length > 0 && (
+                                    <div className="skill-chips">
+                                        {selectedSkills.map(s => (
+                                            <span key={s.id} className="skill-chip">
+                                                {s.name}
+                                                <button type="button" className="skill-chip-remove" onClick={() => removeSkill(s.id)} title="Remove skill">×</button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Autocomplete for adding skills */}
                                 <SkillAutocomplete
-                                    value={coachForm.skillText}
-                                    onChange={(val) => setCoachForm({ ...coachForm, skillText: val, skillId: '' })}
-                                    onSelect={(s) => setCoachForm({ ...coachForm, skillText: s.name, skillId: s.id })}
-                                    placeholder="e.g. Piano, Tennis, Maths..."
+                                    value={skillInput}
+                                    onChange={setSkillInput}
+                                    onSelect={handleSkillAutocompleteSelect}
+                                    onCustomSubmit={addSkillByName}
+                                    clearOnSelect
+                                    placeholder="Type a skill and select or press Enter..."
                                     id="edit-skill"
                                 />
+
+                                {/* AI suggest skills button */}
+                                <div style={{ marginTop: 'var(--space-3)' }}>
+                                    <button
+                                        type="button" className="btn-ai-helper"
+                                        onClick={handleAISuggestSkills}
+                                        disabled={!aiAvailable || aiLoading === 'skills' || (!coachForm.bio.trim() && !coachForm.headline.trim())}
+                                        title={!aiAvailable ? 'Configure AI_API_KEY in server .env to enable' : ''}
+                                    >
+                                        {aiLoading === 'skills' ? '✨ Suggesting...' : !aiAvailable ? '✨ AI not configured' : '✨ Suggest skills with AI'}
+                                    </button>
+                                </div>
+
+                                {/* AI suggestion results with Add/Ignore */}
+                                {skillSuggestions && skillSuggestions.length > 0 && (
+                                    <div className="ai-suggestions-list" style={{ marginTop: 'var(--space-2)' }}>
+                                        <p className="ai-suggestions-label">AI suggested skills:</p>
+                                        {skillSuggestions.map((s, i) => (
+                                            <div key={i} className="ai-suggestion-row">
+                                                <span className="ai-suggestion-name">{s}</span>
+                                                <div className="ai-suggestion-actions">
+                                                    <button type="button" className="btn-ai-add" onClick={() => handleAddAISuggestion(s)}>Add</button>
+                                                    <button type="button" className="btn-ai-ignore" onClick={() => handleIgnoreAISuggestion(s)}>Ignore</button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Headline */}
@@ -505,34 +605,6 @@ export default function ProfileSettings() {
                                     >
                                         ↩ Undo AI change
                                     </button>
-                                )}
-                            </div>
-
-                            {/* AI skill suggestions */}
-                            <div className="form-group">
-                                <button
-                                    type="button" className="btn-ai-helper"
-                                    onClick={handleAISuggestSkills}
-                                    disabled={!aiAvailable || aiLoading === 'skills' || (!coachForm.bio.trim() && !coachForm.headline.trim())}
-                                    title={!aiAvailable ? 'Configure AI_API_KEY in server .env to enable' : ''}
-                                >
-                                    {aiLoading === 'skills' ? '✨ Suggesting...' : !aiAvailable ? '✨ AI not configured' : '✨ Suggest skills with AI'}
-                                </button>
-                                {skillSuggestions && (
-                                    <div className="ai-suggestions-list" style={{ marginTop: 'var(--space-2)' }}>
-                                        <p className="ai-suggestions-label">Suggested skills based on your profile:</p>
-                                        <div className="ai-skill-tags">
-                                            {skillSuggestions.map((s, i) => (
-                                                <button
-                                                    key={i} type="button" className="ai-skill-tag"
-                                                    onClick={() => { setCoachForm({ ...coachForm, skillText: s, skillId: '' }); setSkillSuggestions(null); }}
-                                                >
-                                                    {s}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        <button type="button" className="ai-suggestion-dismiss" onClick={() => setSkillSuggestions(null)}>Dismiss</button>
-                                    </div>
                                 )}
                             </div>
 

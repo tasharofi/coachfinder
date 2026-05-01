@@ -129,6 +129,18 @@ function CoachDashboard({ statusInfo, coachStatus, coachProfile, contactRequests
                 </div>
             )}
 
+            {/* Skills Summary */}
+            {coachStatus === 'APPROVED' && coachProfile?.skills?.length > 0 && (
+                <div className="dashboard-card" style={{ marginTop: 'var(--space-4)' }}>
+                    <h3 style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)' }}>Your Skills</h3>
+                    <div className="coach-card-skills">
+                        {coachProfile.skills.map(s => (
+                            <span key={s.skill?.id || s.id} className="skill-tag">{s.skill?.name || s.name}</span>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Contact Requests (for approved coaches) */}
             {coachStatus === 'APPROVED' && (
                 <div className="dashboard-card" style={{ marginTop: 'var(--space-4)' }}>
