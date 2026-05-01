@@ -156,7 +156,7 @@ export default function ProfileSettings() {
             const response = await updateCoachProfile({
                 headline: coachForm.headline,
                 bio: coachForm.bio,
-                skillId: skillIds.length > 0 ? skillIds : undefined,
+                skillId: skillIds,
             });
 
             if (response.pendingFields?.length > 0) {
@@ -297,7 +297,7 @@ export default function ProfileSettings() {
                 showToast('AI could not suggest skills right now.', 'info');
             }
         } catch {
-            showToast('AI helper is temporarily unavailable.', 'error');
+            showToast('AI helper is temporarily unavailable. Your API quota may be exhausted — try again later.', 'error');
         } finally {
             setAiLoading('');
         }
@@ -340,8 +340,13 @@ export default function ProfileSettings() {
     };
 
     const handleAddAISuggestion = async (name) => {
-        await addSkillByName(name);
-        setSkillSuggestions(prev => prev ? prev.filter(s => s !== name) : null);
+        try {
+            await addSkillByName(name);
+            // Only remove from suggestions if add succeeded
+            setSkillSuggestions(prev => prev ? prev.filter(s => s !== name) : null);
+        } catch {
+            // Don't remove from suggestions if add failed
+        }
     };
 
     const handleIgnoreAISuggestion = (name) => {
