@@ -27,6 +27,11 @@ export default function SuburbAutocomplete({ value, onChange, placeholder, id })
         const val = e.target.value;
         setQuery(val);
 
+        // Notify parent when field is cleared or changed (not from selection)
+        if (!val.trim()) {
+            onChange({ suburb: '', state: '', postcode: '', lat: null, lng: null, display: '' });
+        }
+
         if (debounceRef.current) clearTimeout(debounceRef.current);
 
         if (val.length < 2) {
