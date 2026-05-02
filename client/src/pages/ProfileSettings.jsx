@@ -155,6 +155,7 @@ export default function ProfileSettings() {
             // and don't have a real ID yet
             const resolvedSkills = [];
             const seenIds = new Set();
+            const failedSkills = [];
             for (const s of selectedSkills) {
                 if (s.id && !s.id.startsWith('pending-')) {
                     if (!seenIds.has(s.id)) {
@@ -169,11 +170,19 @@ export default function ProfileSettings() {
                             resolvedSkills.push({ id: result.skill.id, name: result.skill.name });
                         }
                     } catch {
-                        // Skip skills that can't be resolved
+                        failedSkills.push(s);
                     }
                 }
             }
-            setSelectedSkills(resolvedSkills);
+
+            if (failedSkills.length > 0) {
+                // Keep failed skills as pending so the user doesn't lose them
+                setSelectedSkills([...resolvedSkills, ...failedSkills]);
+                showToast(`Could not resolve ${failedSkills.length} skill(s): ${failedSkills.map(s => s.name).join(', ')}. Try again.`, 'error');
+                setSaving(false);
+                return;
+            }
+
             const skillIds = resolvedSkills.map(s => s.id).filter(Boolean);
 
             const response = await updateCoachProfile({
@@ -181,6 +190,16 @@ export default function ProfileSettings() {
                 bio: coachForm.bio,
                 skillId: skillIds,
             });
+
+            // Only update chips after successful save — use the server response
+            if (response.profile?.skills) {
+                setSelectedSkills(response.profile.skills.map(cs => ({
+                    id: cs.skill?.id || cs.skillId,
+                    name: cs.skill?.name || 'Unknown',
+                })));
+            } else {
+                setSelectedSkills(resolvedSkills);
+            }
 
             if (response.pendingFields?.length > 0) {
                 showToast('Changes submitted for review. Your current live profile remains visible.', 'info');
