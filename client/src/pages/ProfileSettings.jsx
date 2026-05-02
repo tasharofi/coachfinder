@@ -154,13 +154,18 @@ export default function ProfileSettings() {
             // Resolve any skills that were added by name (AI suggestions)
             // and don't have a real ID yet
             const resolvedSkills = [];
+            const seenIds = new Set();
             for (const s of selectedSkills) {
                 if (s.id && !s.id.startsWith('pending-')) {
-                    resolvedSkills.push(s);
+                    if (!seenIds.has(s.id)) {
+                        seenIds.add(s.id);
+                        resolvedSkills.push(s);
+                    }
                 } else {
                     try {
                         const result = await resolveSkill(s.name);
-                        if (result.skill) {
+                        if (result.skill && !seenIds.has(result.skill.id)) {
+                            seenIds.add(result.skill.id);
                             resolvedSkills.push({ id: result.skill.id, name: result.skill.name });
                         }
                     } catch {
