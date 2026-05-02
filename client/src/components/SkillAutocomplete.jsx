@@ -5,13 +5,19 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
     const [query, setQuery] = useState(value || '');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
     const wrapperRef = useRef(null);
     const debounceRef = useRef(null);
+    // Track whether the user is actively typing so the value-sync
+    // effect doesn't fight with local edits and cause flicker.
+    const isTypingRef = useRef(false);
 
+    // Only sync from parent prop when it changes externally
+    // (e.g. clearOnSelect, programmatic reset), NOT while the user is typing.
     useEffect(() => {
-        setQuery(value || '');
+        if (!isTypingRef.current) {
+            setQuery(value || '');
+        }
     }, [value]);
 
     useEffect(() => {
@@ -26,9 +32,14 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
 
     const handleInputChange = (e) => {
         const val = e.target.value;
+        isTypingRef.current = true;
         setQuery(val);
         setActiveIndex(-1);
         onChange && onChange(val);
+
+        // Clear the typing flag after React has flushed this render cycle
+        // so the useEffect won't overwrite what the user just typed.
+        requestAnimationFrame(() => { isTypingRef.current = false; });
 
         if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -41,21 +52,19 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
         }
 
         debounceRef.current = setTimeout(async () => {
-            setLoading(true);
             try {
                 const data = await searchSkills(val);
                 setSuggestions(data.suggestions || []);
                 setShowSuggestions(true);
             } catch {
                 setSuggestions([]);
-            } finally {
-                setLoading(false);
             }
-        }, 250);
+        }, 300);
     };
 
     const handleSelect = (skill) => {
         const searchTerm = skill.label || skill.name;
+        isTypingRef.current = false;
         if (clearOnSelect) {
             setQuery('');
             onChange && onChange('');
@@ -134,7 +143,6 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                     ))}
                 </div>
             )}
-            {loading && <div className="skill-loading">Searching...</div>}
         </div>
     );
 }
