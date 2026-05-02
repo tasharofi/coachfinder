@@ -40,27 +40,48 @@ export default function Search() {
     const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'recommended');
     const [mobileShowDetail, setMobileShowDetail] = useState(false);
 
-
-
-    const fetchCoaches = useCallback(async () => {
+    const fetchCoaches = useCallback(async (filters) => {
         setLoading(true);
         try {
             const params = {};
-            if (skill) params.skill = skill;
-            if (suburb) params.suburb = suburb;
-            if (sessionMode) params.sessionMode = sessionMode;
-            if (PRICE_RANGES[priceRange]?.min) params.priceMin = PRICE_RANGES[priceRange].min;
-            if (PRICE_RANGES[priceRange]?.max) params.priceMax = PRICE_RANGES[priceRange].max;
-            if (availability) params.availability = availability;
-            if (sortBy) params.sortBy = sortBy;
+            if (filters.skill) params.skill = filters.skill;
+            if (filters.suburb) params.suburb = filters.suburb;
+            if (filters.sessionMode) params.sessionMode = filters.sessionMode;
+            if (PRICE_RANGES[filters.priceRange]?.min) params.priceMin = PRICE_RANGES[filters.priceRange].min;
+            if (PRICE_RANGES[filters.priceRange]?.max) params.priceMax = PRICE_RANGES[filters.priceRange].max;
+            if (filters.availability) params.availability = filters.availability;
+            if (filters.sortBy) params.sortBy = filters.sortBy;
 
             const data = await searchCoaches(params);
             setCoaches(data.coaches || []);
         } catch { setCoaches([]); }
         finally { setLoading(false); }
-    }, [skill, suburb, sessionMode, priceRange, availability, sortBy]);
+    }, []);
 
-    useEffect(() => { fetchCoaches(); }, [fetchCoaches]);
+    // Only fetch on initial mount using URL params
+    useEffect(() => {
+        fetchCoaches({
+            skill: searchParams.get('skill') || '',
+            suburb: searchParams.get('suburb') || '',
+            sessionMode: searchParams.get('sessionMode') || '',
+            priceRange: 0,
+            availability: searchParams.get('availability') || '',
+            sortBy: searchParams.get('sortBy') || 'recommended',
+        });
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const handleSearch = (e) => {
+        if (e) e.preventDefault();
+        const params = new URLSearchParams();
+        if (skill) params.set('skill', skill);
+        if (suburb) params.set('suburb', suburb);
+        if (sessionMode) params.set('sessionMode', sessionMode);
+        if (availability) params.set('availability', availability);
+        if (sortBy !== 'recommended') params.set('sortBy', sortBy);
+        setSearchParams(params);
+        // Fetch with current filter state
+        fetchCoaches({ skill, suburb, sessionMode, priceRange, availability, sortBy });
+    };
 
     // Restore selected coach from URL on initial load
     useEffect(() => {
@@ -70,17 +91,6 @@ export default function Search() {
             if (match) { setSelectedCoach(match); setMobileShowDetail(true); }
         }
     }, [coaches]); // eslint-disable-line react-hooks/exhaustive-deps
-
-    const handleSearch = (e) => {
-        e.preventDefault();
-        const params = new URLSearchParams();
-        if (skill) params.set('skill', skill);
-        if (suburb) params.set('suburb', suburb);
-        if (sessionMode) params.set('sessionMode', sessionMode);
-        if (availability) params.set('availability', availability);
-        if (sortBy !== 'recommended') params.set('sortBy', sortBy);
-        setSearchParams(params);
-    };
 
     const selectCoach = (coach) => {
         setSelectedCoach(coach);
