@@ -151,7 +151,25 @@ export default function ProfileSettings() {
     const saveCoachProfile = async () => {
         setSaving(true);
         try {
-            const skillIds = selectedSkills.map(s => s.id).filter(Boolean);
+            // Resolve any skills that were added by name (AI suggestions)
+            // and don't have a real ID yet
+            const resolvedSkills = [];
+            for (const s of selectedSkills) {
+                if (s.id && !s.id.startsWith('pending-')) {
+                    resolvedSkills.push(s);
+                } else {
+                    try {
+                        const result = await resolveSkill(s.name);
+                        if (result.skill) {
+                            resolvedSkills.push({ id: result.skill.id, name: result.skill.name });
+                        }
+                    } catch {
+                        // Skip skills that can't be resolved
+                    }
+                }
+            }
+            setSelectedSkills(resolvedSkills);
+            const skillIds = resolvedSkills.map(s => s.id).filter(Boolean);
 
             const response = await updateCoachProfile({
                 headline: coachForm.headline,
@@ -339,14 +357,15 @@ export default function ProfileSettings() {
         setSelectedSkills(prev => [...prev, { id: s.id, name: s.resolvedName || s.name }]);
     };
 
-    const handleAddAISuggestion = async (name) => {
-        try {
-            await addSkillByName(name);
-            // Only remove from suggestions if add succeeded
+    const handleAddAISuggestion = (name) => {
+        if (selectedSkills.some(s => s.name.toLowerCase() === name.toLowerCase())) {
+            showToast('This skill is already added.', 'info');
             setSkillSuggestions(prev => prev ? prev.filter(s => s !== name) : null);
-        } catch {
-            // Don't remove from suggestions if add failed
+            return;
         }
+        // Add instantly with a temporary ID — resolved at save time
+        setSelectedSkills(prev => [...prev, { id: `pending-${Date.now()}`, name }]);
+        setSkillSuggestions(prev => prev ? prev.filter(s => s !== name) : null);
     };
 
     const handleIgnoreAISuggestion = (name) => {
