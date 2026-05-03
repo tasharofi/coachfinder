@@ -25,19 +25,28 @@ router.get('/', async (req, res) => {
         // Skill filter — match canonical names, aliases, then fallback to bio/headline
         let skillFallbackText = null;
         if (skill) {
-            // Find matching canonical skill IDs via name or alias
+            // Find matching skill IDs: canonical OR proposed-but-used-by-approved-coaches
             const matchedByName = await prisma.skill.findMany({
                 where: {
                     enabled: true,
-                    isProposed: false,
                     name: { contains: skill },
+                    OR: [
+                        { isProposed: false },
+                        { isProposed: true, coaches: { some: { coachProfile: { status: 'APPROVED' } } } },
+                    ],
                 },
                 select: { id: true },
             });
             const matchedByAlias = await prisma.skillAlias.findMany({
                 where: {
                     alias: { contains: skill },
-                    skill: { enabled: true, isProposed: false },
+                    skill: {
+                        enabled: true,
+                        OR: [
+                            { isProposed: false },
+                            { isProposed: true, coaches: { some: { coachProfile: { status: 'APPROVED' } } } },
+                        ],
+                    },
                 },
                 select: { skillId: true },
             });
