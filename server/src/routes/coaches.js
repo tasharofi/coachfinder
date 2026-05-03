@@ -199,22 +199,32 @@ router.get('/skills/autocomplete', async (req, res) => {
 
         const lowerQ = q.toLowerCase().trim();
 
-        // 1. Find matching canonical/approved skills only (NOT proposed)
+        // 1. Find matching skills: canonical OR proposed-but-used-by-approved-coaches
         const matchedSkills = await prisma.skill.findMany({
             where: {
                 enabled: true,
-                isProposed: false,
                 name: { contains: q },
+                OR: [
+                    { isProposed: false },
+                    // Include proposed skills that are on at least one approved coach profile
+                    { isProposed: true, coaches: { some: { coachProfile: { status: 'APPROVED' } } } },
+                ],
             },
-            select: { id: true, name: true, parentGroup: true },
+            select: { id: true, name: true, parentGroup: true, isProposed: true },
             take: 10,
         });
 
-        // 2. Find matching aliases
+        // 2. Find matching aliases (of canonical or approved-coach-used skills)
         const matchedAliases = await prisma.skillAlias.findMany({
             where: {
                 alias: { contains: q },
-                skill: { enabled: true, isProposed: false },
+                skill: {
+                    enabled: true,
+                    OR: [
+                        { isProposed: false },
+                        { isProposed: true, coaches: { some: { coachProfile: { status: 'APPROVED' } } } },
+                    ],
+                },
             },
             select: {
                 alias: true,
