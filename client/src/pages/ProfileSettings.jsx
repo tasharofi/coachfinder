@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -28,6 +28,12 @@ export default function ProfileSettings() {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
+    const [editingTab, setEditingTab] = useState(null);
+
+    // Snapshot refs for Cancel — stores the saved values before editing
+    const savedPersonalRef = useRef(null);
+    const savedCoachFormRef = useRef(null);
+    const savedSkillsRef = useRef(null);
 
     // User-level fields
     const [personal, setPersonal] = useState({ name: '', phone: '', avatar: '' });
@@ -132,6 +138,36 @@ export default function ProfileSettings() {
         }
     };
 
+    // --- View/Edit toggle helpers ---
+    const startEditing = (tabId) => {
+        if (tabId === 'personal') {
+            savedPersonalRef.current = { ...personal };
+        } else if (tabId === 'coach') {
+            savedCoachFormRef.current = { ...coachForm };
+            savedSkillsRef.current = [...selectedSkills];
+        } else if (tabId === 'availability') {
+            savedCoachFormRef.current = { ...coachForm };
+        } else if (tabId === 'certs') {
+            savedCoachFormRef.current = { ...coachForm };
+        }
+        setEditingTab(tabId);
+    };
+
+    const cancelEditing = () => {
+        if (editingTab === 'personal' && savedPersonalRef.current) {
+            setPersonal(savedPersonalRef.current);
+        } else if (editingTab === 'coach' && savedCoachFormRef.current) {
+            setCoachForm(savedCoachFormRef.current);
+            if (savedSkillsRef.current) setSelectedSkills(savedSkillsRef.current);
+            setSkillSuggestions(null);
+            setHeadlineSuggestions(null);
+            setPreviousBio(null);
+        } else if ((editingTab === 'availability' || editingTab === 'certs') && savedCoachFormRef.current) {
+            setCoachForm(savedCoachFormRef.current);
+        }
+        setEditingTab(null);
+    };
+
     const savePersonal = async () => {
         setSaving(true);
         try {
@@ -141,6 +177,7 @@ export default function ProfileSettings() {
             });
             await refreshUser();
             showToast('Personal info updated');
+            setEditingTab(null);
         } catch (err) {
             showToast(err.message, 'error');
         } finally {
@@ -207,6 +244,7 @@ export default function ProfileSettings() {
                 showToast('Coach profile updated');
             }
 
+            setEditingTab(null);
             // Refresh pending edits
             const pendingData = await getMyPendingEdits().catch(() => ({ pendingEdits: [] }));
             setPendingEdits(pendingData.pendingEdits || []);
@@ -238,6 +276,7 @@ export default function ProfileSettings() {
             });
             await refreshUser();
             showToast('Availability & pricing updated');
+            setEditingTab(null);
         } catch (err) {
             showToast(err.message, 'error');
         } finally {
@@ -258,6 +297,7 @@ export default function ProfileSettings() {
                 showToast('Changes submitted for review. Your current live profile remains visible.', 'info');
             } else {
                 showToast('Certifications & links updated');
+                setEditingTab(null);
             }
 
             const pendingData = await getMyPendingEdits().catch(() => ({ pendingEdits: [] }));
@@ -457,67 +497,99 @@ export default function ProfileSettings() {
             <div className="profile-settings-content">
                 {tab === 'personal' && (
                     <div className="dashboard-card">
-                        <h2 className="dashboard-card-title">Personal Information</h2>
-                        <div className="apply-form">
-                            {/* Avatar */}
-                            <div className="form-group">
-                                <label className="form-label">Profile Photo</label>
-                                <div className="photo-upload">
-                                    {photoPreview ? (
-                                        <img src={photoPreview} alt="Preview" className="photo-preview" />
-                                    ) : (
-                                        <div className="photo-placeholder">
-                                            {user.name?.charAt(0)?.toUpperCase() || '?'}
-                                        </div>
-                                    )}
-                                    <label className="btn btn-outline btn-sm photo-upload-btn">
-                                        {uploading ? 'Uploading...' : 'Change Photo'}
-                                        <input type="file" accept="image/*" onChange={handlePhotoUpload} hidden />
-                                    </label>
+                        <div className="profile-card-header">
+                            <h2 className="dashboard-card-title">Personal Information</h2>
+                            {editingTab !== 'personal' && (
+                                <button className="btn btn-outline btn-sm" onClick={() => startEditing('personal')}>Edit</button>
+                            )}
+                        </div>
+
+                        {editingTab === 'personal' ? (
+                            /* --- EDIT MODE --- */
+                            <div className="apply-form">
+                                <div className="form-group">
+                                    <label className="form-label">Profile Photo</label>
+                                    <div className="photo-upload">
+                                        {photoPreview ? (
+                                            <img src={photoPreview} alt="Preview" className="photo-preview" />
+                                        ) : (
+                                            <div className="photo-placeholder">
+                                                {user.name?.charAt(0)?.toUpperCase() || '?'}
+                                            </div>
+                                        )}
+                                        <label className="btn btn-outline btn-sm photo-upload-btn">
+                                            {uploading ? 'Uploading...' : 'Change Photo'}
+                                            <input type="file" accept="image/*" onChange={handlePhotoUpload} hidden />
+                                        </label>
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="profile-name">Full Name</label>
+                                    <input
+                                        id="profile-name" className="form-input"
+                                        value={personal.name}
+                                        onChange={(e) => setPersonal({ ...personal, name: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Email</label>
+                                    <input className="form-input" value={user.email} disabled
+                                        style={{ opacity: 0.6, cursor: 'not-allowed' }} />
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="profile-phone">Phone</label>
+                                    <input
+                                        id="profile-phone" className="form-input" type="tel"
+                                        value={personal.phone}
+                                        onChange={(e) => setPersonal({ ...personal, phone: e.target.value })}
+                                        placeholder="04xx xxx xxx"
+                                    />
+                                </div>
+                                <div className="profile-edit-actions">
+                                    <button className="btn btn-primary" onClick={savePersonal} disabled={saving}>
+                                        {saving ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                    <button className="btn btn-outline" onClick={cancelEditing} disabled={saving}>Cancel</button>
                                 </div>
                             </div>
-
-                            {/* Name */}
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="profile-name">Full Name</label>
-                                <input
-                                    id="profile-name" className="form-input"
-                                    value={personal.name}
-                                    onChange={(e) => setPersonal({ ...personal, name: e.target.value })}
-                                />
+                        ) : (
+                            /* --- VIEW MODE --- */
+                            <div className="profile-view">
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Photo</span>
+                                    <span className="profile-view-value">
+                                        {photoPreview ? (
+                                            <img src={photoPreview} alt="Profile" className="photo-preview-sm" />
+                                        ) : (
+                                            <div className="photo-placeholder-sm">{user.name?.charAt(0)?.toUpperCase() || '?'}</div>
+                                        )}
+                                    </span>
+                                </div>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Full Name</span>
+                                    <span className="profile-view-value">{personal.name || '—'}</span>
+                                </div>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Email</span>
+                                    <span className="profile-view-value">{user.email}</span>
+                                </div>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Phone</span>
+                                    <span className="profile-view-value">{personal.phone || '—'}</span>
+                                </div>
                             </div>
-
-                            {/* Email (read-only) */}
-                            <div className="form-group">
-                                <label className="form-label">Email</label>
-                                <input className="form-input" value={user.email} disabled
-                                    style={{ opacity: 0.6, cursor: 'not-allowed' }} />
-                            </div>
-
-                            {/* Phone */}
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="profile-phone">Phone</label>
-                                <input
-                                    id="profile-phone" className="form-input" type="tel"
-                                    value={personal.phone}
-                                    onChange={(e) => setPersonal({ ...personal, phone: e.target.value })}
-                                    placeholder="04xx xxx xxx"
-                                />
-                            </div>
-
-                            <button
-                                className="btn btn-primary" onClick={savePersonal}
-                                disabled={saving} style={{ marginTop: 'var(--space-2)' }}
-                            >
-                                {saving ? 'Saving...' : 'Save Changes'}
-                            </button>
-                        </div>
+                        )}
                     </div>
                 )}
 
                 {tab === 'coach' && coachTabs && (
                     <div className="dashboard-card">
-                        <h2 className="dashboard-card-title">Public Coach Profile</h2>
+                        <div className="profile-card-header">
+                            <h2 className="dashboard-card-title">Public Coach Profile</h2>
+                            {editingTab !== 'coach' && (
+                                <button className="btn btn-outline btn-sm" onClick={() => startEditing('coach')}>Edit</button>
+                            )}
+                        </div>
                         <p className="form-helper-text" style={{ marginBottom: 'var(--space-4)' }}>
                             Changes to headline, bio, and skills may require review before appearing publicly.
                         </p>
@@ -528,255 +600,255 @@ export default function ProfileSettings() {
                             </div>
                         )}
 
-                        <div className="apply-form">
-                            {/* Skills */}
-                            <div className="form-group">
-                                <label className="form-label">What do you teach?</label>
-                                <p className="form-helper-text" style={{ marginBottom: 'var(--space-2)' }}>
-                                    Add the skills, subjects or activities you coach. These help learners find you.
-                                </p>
-
-                                {/* Selected skill chips */}
-                                {selectedSkills.length > 0 && (
-                                    <div className="skill-chips">
-                                        {selectedSkills.map(s => (
-                                            <span key={s.id} className="skill-chip">
-                                                {s.name}
-                                                <button type="button" className="skill-chip-remove" onClick={() => removeSkill(s.id)} title="Remove skill">×</button>
-                                            </span>
-                                        ))}
+                        {editingTab === 'coach' ? (
+                            <div className="apply-form">
+                                <div className="form-group">
+                                    <label className="form-label">What do you teach?</label>
+                                    <p className="form-helper-text" style={{ marginBottom: 'var(--space-2)' }}>
+                                        Add the skills, subjects or activities you coach.
+                                    </p>
+                                    {selectedSkills.length > 0 && (
+                                        <div className="skill-chips">
+                                            {selectedSkills.map(s => (
+                                                <span key={s.id} className="skill-chip">
+                                                    {s.name}
+                                                    <button type="button" className="skill-chip-remove" onClick={() => removeSkill(s.id)} title="Remove skill">×</button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <SkillAutocomplete
+                                        value={skillInput} onChange={setSkillInput}
+                                        onSelect={handleSkillAutocompleteSelect} onCustomSubmit={addSkillByName}
+                                        clearOnSelect placeholder="Type a skill and select or press Enter..." id="edit-skill"
+                                    />
+                                    <div style={{ marginTop: 'var(--space-3)' }}>
+                                        <button type="button" className="btn-ai-helper" onClick={handleAISuggestSkills}
+                                            disabled={!aiAvailable || aiLoading === 'skills' || (!coachForm.bio.trim() && !coachForm.headline.trim())}>
+                                            {aiLoading === 'skills' ? '✨ Suggesting...' : !aiAvailable ? '✨ AI not configured' : '✨ Suggest skills with AI'}
+                                        </button>
                                     </div>
-                                )}
-
-                                {/* Autocomplete for adding skills */}
-                                <SkillAutocomplete
-                                    value={skillInput}
-                                    onChange={setSkillInput}
-                                    onSelect={handleSkillAutocompleteSelect}
-                                    onCustomSubmit={addSkillByName}
-                                    clearOnSelect
-                                    placeholder="Type a skill and select or press Enter..."
-                                    id="edit-skill"
-                                />
-
-                                {/* AI suggest skills button */}
-                                <div style={{ marginTop: 'var(--space-3)' }}>
-                                    <button
-                                        type="button" className="btn-ai-helper"
-                                        onClick={handleAISuggestSkills}
-                                        disabled={!aiAvailable || aiLoading === 'skills' || (!coachForm.bio.trim() && !coachForm.headline.trim())}
-                                        title={!aiAvailable ? 'Configure AI_API_KEY in server .env to enable' : ''}
-                                    >
-                                        {aiLoading === 'skills' ? '✨ Suggesting...' : !aiAvailable ? '✨ AI not configured' : '✨ Suggest skills with AI'}
-                                    </button>
-                                </div>
-
-                                {/* AI suggestion results with Add/Ignore */}
-                                {skillSuggestions && skillSuggestions.length > 0 && (
-                                    <div className="ai-suggestions-list" style={{ marginTop: 'var(--space-2)' }}>
-                                        <p className="ai-suggestions-label">AI suggested skills:</p>
-                                        {skillSuggestions.map((s, i) => (
-                                            <div key={i} className="ai-suggestion-row">
-                                                <span className="ai-suggestion-name">{s}</span>
-                                                <div className="ai-suggestion-actions">
-                                                    <button type="button" className="btn-ai-add" onClick={() => handleAddAISuggestion(s)}>Add</button>
-                                                    <button type="button" className="btn-ai-ignore" onClick={() => handleIgnoreAISuggestion(s)}>Ignore</button>
+                                    {skillSuggestions && skillSuggestions.length > 0 && (
+                                        <div className="ai-suggestions-list" style={{ marginTop: 'var(--space-2)' }}>
+                                            <p className="ai-suggestions-label">AI suggested skills:</p>
+                                            {skillSuggestions.map((s, i) => (
+                                                <div key={i} className="ai-suggestion-row">
+                                                    <span className="ai-suggestion-name">{s}</span>
+                                                    <div className="ai-suggestion-actions">
+                                                        <button type="button" className="btn-ai-add" onClick={() => handleAddAISuggestion(s)}>Add</button>
+                                                        <button type="button" className="btn-ai-ignore" onClick={() => handleIgnoreAISuggestion(s)}>Ignore</button>
+                                                    </div>
                                                 </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="edit-headline">Headline / Title</label>
+                                    <input id="edit-headline" className="form-input" value={coachForm.headline}
+                                        onChange={(e) => { setCoachForm({ ...coachForm, headline: e.target.value }); setHeadlineSuggestions(null); }}
+                                        placeholder="e.g. Certified Tennis Coach — All Levels" maxLength={120} />
+                                    <div className="form-field-actions">
+                                        <span className="form-char-count">{coachForm.headline.length}/120</span>
+                                        <button type="button" className="btn-ai-helper" onClick={handleAIImproveHeadline}
+                                            disabled={!aiAvailable || aiLoading === 'headline' || !coachForm.headline.trim()}>
+                                            {aiLoading === 'headline' ? '✨ Generating...' : '✨ Improve headline with AI'}
+                                        </button>
+                                    </div>
+                                    {headlineSuggestions && (
+                                        <div className="ai-suggestions-list">
+                                            <p className="ai-suggestions-label">Choose a headline:</p>
+                                            {headlineSuggestions.map((h, i) => (
+                                                <button key={i} type="button" className="ai-suggestion-option"
+                                                    onClick={() => { setCoachForm({ ...coachForm, headline: h }); setHeadlineSuggestions(null); }}>{h}</button>
+                                            ))}
+                                            <button type="button" className="ai-suggestion-dismiss" onClick={() => setHeadlineSuggestions(null)}>Dismiss</button>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="edit-bio">About / Bio</label>
+                                    <textarea id="edit-bio" className="form-input form-textarea" value={coachForm.bio}
+                                        onChange={(e) => setCoachForm({ ...coachForm, bio: e.target.value })}
+                                        placeholder="Tell learners about your experience and teaching style..."
+                                        rows={5} maxLength={2000} />
+                                    <div className="form-field-actions">
+                                        <span className="form-char-count">{coachForm.bio.length}/2000</span>
+                                        <button type="button" className="btn-ai-helper" onClick={handleAIImproveBio}
+                                            disabled={!aiAvailable || aiLoading === 'bio' || !coachForm.bio.trim()}>
+                                            {aiLoading === 'bio' ? '✨ Improving...' : '✨ Improve bio with AI'}
+                                        </button>
+                                    </div>
+                                    {previousBio && (
+                                        <button type="button" className="btn-ai-undo"
+                                            onClick={() => { setCoachForm({ ...coachForm, bio: previousBio }); setPreviousBio(null); }}>↩ Undo AI change</button>
+                                    )}
+                                </div>
+                                <div className="profile-edit-actions">
+                                    <button className="btn btn-primary" onClick={saveCoachProfile} disabled={saving}>
+                                        {saving ? 'Saving...' : 'Save Coach Profile'}
+                                    </button>
+                                    <button className="btn btn-outline" onClick={cancelEditing} disabled={saving}>Cancel</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="profile-view">
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Skills</span>
+                                    <span className="profile-view-value">
+                                        {selectedSkills.length > 0 ? (
+                                            <div className="skill-chips skill-chips-view">
+                                                {selectedSkills.map(s => (
+                                                    <span key={s.id} className="skill-chip skill-chip-view">{s.name}</span>
+                                                ))}
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Headline */}
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="edit-headline">Headline / Title</label>
-                                <input
-                                    id="edit-headline" className="form-input"
-                                    value={coachForm.headline}
-                                    onChange={(e) => { setCoachForm({ ...coachForm, headline: e.target.value }); setHeadlineSuggestions(null); }}
-                                    placeholder="e.g. Certified Tennis Coach — All Levels"
-                                    maxLength={120}
-                                />
-                                <div className="form-field-actions">
-                                    <span className="form-char-count">{coachForm.headline.length}/120</span>
-                                    <button
-                                        type="button" className="btn-ai-helper"
-                                        onClick={handleAIImproveHeadline}
-                                        disabled={!aiAvailable || aiLoading === 'headline' || !coachForm.headline.trim()}
-                                        title={!aiAvailable ? 'Configure AI_API_KEY in server .env to enable' : ''}
-                                    >
-                                        {aiLoading === 'headline' ? '✨ Generating...' : !aiAvailable ? '✨ AI not configured' : '✨ Improve headline with AI'}
-                                    </button>
+                                        ) : <span className="profile-view-empty">No skills added</span>}
+                                    </span>
                                 </div>
-                                {headlineSuggestions && (
-                                    <div className="ai-suggestions-list">
-                                        <p className="ai-suggestions-label">Choose a headline:</p>
-                                        {headlineSuggestions.map((h, i) => (
-                                            <button
-                                                key={i} type="button" className="ai-suggestion-option"
-                                                onClick={() => { setCoachForm({ ...coachForm, headline: h }); setHeadlineSuggestions(null); }}
-                                            >
-                                                {h}
-                                            </button>
-                                        ))}
-                                        <button type="button" className="ai-suggestion-dismiss" onClick={() => setHeadlineSuggestions(null)}>Dismiss</button>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Bio */}
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="edit-bio">About / Bio</label>
-                                <textarea
-                                    id="edit-bio" className="form-input form-textarea"
-                                    value={coachForm.bio}
-                                    onChange={(e) => setCoachForm({ ...coachForm, bio: e.target.value })}
-                                    placeholder="Tell learners about your experience and teaching style..."
-                                    rows={5} maxLength={2000}
-                                />
-                                <div className="form-field-actions">
-                                    <span className="form-char-count">{coachForm.bio.length}/2000</span>
-                                    <button
-                                        type="button" className="btn-ai-helper"
-                                        onClick={handleAIImproveBio}
-                                        disabled={!aiAvailable || aiLoading === 'bio' || !coachForm.bio.trim()}
-                                        title={!aiAvailable ? 'Configure AI_API_KEY in server .env to enable' : ''}
-                                    >
-                                        {aiLoading === 'bio' ? '✨ Improving...' : !aiAvailable ? '✨ AI not configured' : '✨ Improve bio with AI'}
-                                    </button>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Headline</span>
+                                    <span className="profile-view-value">{coachForm.headline || <span className="profile-view-empty">Not set</span>}</span>
                                 </div>
-                                {previousBio && (
-                                    <button
-                                        type="button" className="btn-ai-undo"
-                                        onClick={() => { setCoachForm({ ...coachForm, bio: previousBio }); setPreviousBio(null); }}
-                                    >
-                                        ↩ Undo AI change
-                                    </button>
-                                )}
+                                <div className="profile-view-row profile-view-row-bio">
+                                    <span className="profile-view-label">Bio</span>
+                                    <span className="profile-view-value profile-view-bio">{coachForm.bio || <span className="profile-view-empty">Not set</span>}</span>
+                                </div>
                             </div>
-
-                            <button
-                                className="btn btn-primary" onClick={saveCoachProfile}
-                                disabled={saving} style={{ marginTop: 'var(--space-2)' }}
-                            >
-                                {saving ? 'Saving...' : 'Save Coach Profile'}
-                            </button>
-                        </div>
+                        )}
                     </div>
                 )}
+
+
 
                 {tab === 'availability' && coachTabs && (
                     <div className="dashboard-card">
-                        <h2 className="dashboard-card-title">Availability & Pricing</h2>
-                        <p className="form-helper-text" style={{ marginBottom: 'var(--space-4)' }}>
-                            These changes save instantly.
-                        </p>
-
-                        <div className="apply-form">
-                            {/* Session mode */}
-                            <div className="form-group">
-                                <label className="form-label">Service Mode</label>
-                                <div className="form-toggle">
-                                    {['IN_PERSON', 'ONLINE', 'BOTH'].map(mode => (
-                                        <button
-                                            key={mode} type="button"
-                                            className={`form-toggle-option ${coachForm.sessionMode === mode ? 'active' : ''}`}
-                                            onClick={() => setCoachForm({ ...coachForm, sessionMode: mode })}
-                                        >
-                                            {SESSION_MODE_LABELS[mode]}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Location */}
-                            <div className="form-group">
-                                <label className="form-label">Location</label>
-                                <SuburbAutocomplete
-                                    value={suburbDisplay}
-                                    onChange={handleSuburbChange}
-                                    placeholder="Start typing your suburb..."
-                                    id="edit-suburb"
-                                />
-                            </div>
-
-                            {/* Service radius */}
-                            {coachForm.sessionMode !== 'ONLINE' && (
-                                <div className="form-group">
-                                    <label className="form-label" htmlFor="edit-radius">Service Area</label>
-                                    <input
-                                        id="edit-radius" className="form-input"
-                                        value={coachForm.serviceRadius}
-                                        onChange={(e) => setCoachForm({ ...coachForm, serviceRadius: e.target.value })}
-                                        placeholder="e.g. Eastern Suburbs Sydney"
-                                    />
-                                </div>
+                        <div className="profile-card-header">
+                            <h2 className="dashboard-card-title">Availability & Pricing</h2>
+                            {editingTab !== 'availability' && (
+                                <button className="btn btn-outline btn-sm" onClick={() => startEditing('availability')}>Edit</button>
                             )}
-
-                            {/* Price & Experience */}
-                            <div className="form-row">
-                                <div className="form-group" style={{ flex: 1 }}>
-                                    <label className="form-label" htmlFor="edit-rate">Hourly Rate ($)</label>
-                                    <input
-                                        id="edit-rate" className="form-input" type="number" min="1" step="5"
-                                        value={coachForm.hourlyRate}
-                                        onChange={(e) => setCoachForm({ ...coachForm, hourlyRate: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-group" style={{ flex: 1 }}>
-                                    <label className="form-label" htmlFor="edit-exp">Years of Experience</label>
-                                    <input
-                                        id="edit-exp" className="form-input" type="number" min="0"
-                                        value={coachForm.yearsExp}
-                                        onChange={(e) => setCoachForm({ ...coachForm, yearsExp: e.target.value })}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Contact */}
-                            <div className="form-row">
-                                <div className="form-group" style={{ flex: 1 }}>
-                                    <label className="form-label" htmlFor="edit-email">Contact Email</label>
-                                    <input
-                                        id="edit-email" className="form-input" type="email"
-                                        value={coachForm.email}
-                                        onChange={(e) => setCoachForm({ ...coachForm, email: e.target.value })}
-                                    />
-                                </div>
-                                <div className="form-group" style={{ flex: 1 }}>
-                                    <label className="form-label" htmlFor="edit-phone">Phone</label>
-                                    <input
-                                        id="edit-phone" className="form-input" type="tel"
-                                        value={coachForm.phone}
-                                        onChange={(e) => setCoachForm({ ...coachForm, phone: e.target.value })}
-                                        placeholder="04xx xxx xxx"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Availability */}
-                            <div className="form-group">
-                                <label className="form-label">Broad Availability</label>
-                                <AvailabilityPicker
-                                    value={coachForm.availability}
-                                    onChange={(v) => setCoachForm({ ...coachForm, availability: v })}
-                                />
-                            </div>
-
-                            <button
-                                className="btn btn-primary" onClick={saveAvailability}
-                                disabled={saving} style={{ marginTop: 'var(--space-2)' }}
-                            >
-                                {saving ? 'Saving...' : 'Save Changes'}
-                            </button>
                         </div>
+
+                        {editingTab === 'availability' ? (
+                            <div className="apply-form">
+                                <div className="form-group">
+                                    <label className="form-label">Service Mode</label>
+                                    <div className="form-toggle">
+                                        {['IN_PERSON', 'ONLINE', 'BOTH'].map(mode => (
+                                            <button key={mode} type="button"
+                                                className={`form-toggle-option ${coachForm.sessionMode === mode ? 'active' : ''}`}
+                                                onClick={() => setCoachForm({ ...coachForm, sessionMode: mode })}>
+                                                {SESSION_MODE_LABELS[mode]}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Location</label>
+                                    <SuburbAutocomplete value={suburbDisplay} onChange={handleSuburbChange}
+                                        placeholder="Start typing your suburb..." id="edit-suburb" />
+                                </div>
+                                {coachForm.sessionMode !== 'ONLINE' && (
+                                    <div className="form-group">
+                                        <label className="form-label" htmlFor="edit-radius">Service Area</label>
+                                        <input id="edit-radius" className="form-input" value={coachForm.serviceRadius}
+                                            onChange={(e) => setCoachForm({ ...coachForm, serviceRadius: e.target.value })}
+                                            placeholder="e.g. Eastern Suburbs Sydney" />
+                                    </div>
+                                )}
+                                <div className="form-row">
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label className="form-label" htmlFor="edit-rate">Hourly Rate ($)</label>
+                                        <input id="edit-rate" className="form-input" type="number" min="1" step="5"
+                                            value={coachForm.hourlyRate}
+                                            onChange={(e) => setCoachForm({ ...coachForm, hourlyRate: e.target.value })} />
+                                    </div>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label className="form-label" htmlFor="edit-exp">Years of Experience</label>
+                                        <input id="edit-exp" className="form-input" type="number" min="0"
+                                            value={coachForm.yearsExp}
+                                            onChange={(e) => setCoachForm({ ...coachForm, yearsExp: e.target.value })} />
+                                    </div>
+                                </div>
+                                <div className="form-row">
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label className="form-label" htmlFor="edit-email">Contact Email</label>
+                                        <input id="edit-email" className="form-input" type="email" value={coachForm.email}
+                                            onChange={(e) => setCoachForm({ ...coachForm, email: e.target.value })} />
+                                    </div>
+                                    <div className="form-group" style={{ flex: 1 }}>
+                                        <label className="form-label" htmlFor="edit-phone">Phone</label>
+                                        <input id="edit-phone" className="form-input" type="tel" value={coachForm.phone}
+                                            onChange={(e) => setCoachForm({ ...coachForm, phone: e.target.value })}
+                                            placeholder="04xx xxx xxx" />
+                                    </div>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label">Broad Availability</label>
+                                    <AvailabilityPicker value={coachForm.availability}
+                                        onChange={(v) => setCoachForm({ ...coachForm, availability: v })} />
+                                </div>
+                                <div className="profile-edit-actions">
+                                    <button className="btn btn-primary" onClick={saveAvailability} disabled={saving}>
+                                        {saving ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                    <button className="btn btn-outline" onClick={cancelEditing} disabled={saving}>Cancel</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="profile-view">
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Service Mode</span>
+                                    <span className="profile-view-value">{SESSION_MODE_LABELS[coachForm.sessionMode] || '—'}</span>
+                                </div>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Location</span>
+                                    <span className="profile-view-value">{suburbDisplay || <span className="profile-view-empty">Not set</span>}</span>
+                                </div>
+                                {coachForm.sessionMode !== 'ONLINE' && coachForm.serviceRadius && (
+                                    <div className="profile-view-row">
+                                        <span className="profile-view-label">Service Area</span>
+                                        <span className="profile-view-value">{coachForm.serviceRadius}</span>
+                                    </div>
+                                )}
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Hourly Rate</span>
+                                    <span className="profile-view-value">{coachForm.hourlyRate ? `$${coachForm.hourlyRate}/hr` : <span className="profile-view-empty">Not set</span>}</span>
+                                </div>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Experience</span>
+                                    <span className="profile-view-value">{coachForm.yearsExp ? `${coachForm.yearsExp} years` : <span className="profile-view-empty">Not set</span>}</span>
+                                </div>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Contact Email</span>
+                                    <span className="profile-view-value">{coachForm.email || <span className="profile-view-empty">Not set</span>}</span>
+                                </div>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Phone</span>
+                                    <span className="profile-view-value">{coachForm.phone || <span className="profile-view-empty">Not set</span>}</span>
+                                </div>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">Availability</span>
+                                    <span className="profile-view-value">
+                                        {coachForm.availability?.length > 0
+                                            ? coachForm.availability.join(', ')
+                                            : <span className="profile-view-empty">Not set</span>}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 
+
                 {tab === 'certs' && coachTabs && (
                     <div className="dashboard-card">
-                        <h2 className="dashboard-card-title">Certifications & Links</h2>
+                        <div className="profile-card-header">
+                            <h2 className="dashboard-card-title">Certifications & Links</h2>
+                            {editingTab !== 'certs' && (
+                                <button className="btn btn-outline btn-sm" onClick={() => startEditing('certs')}>Edit</button>
+                            )}
+                        </div>
                         <p className="form-helper-text" style={{ marginBottom: 'var(--space-4)' }}>
                             Changes to this section may require review before they appear publicly.
                         </p>
@@ -787,38 +859,49 @@ export default function ProfileSettings() {
                             </div>
                         )}
 
-                        <div className="apply-form">
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="edit-certs">Certifications & Qualifications</label>
-                                <textarea
-                                    id="edit-certs" className="form-input form-textarea"
-                                    value={coachForm.certifications}
-                                    onChange={(e) => setCoachForm({ ...coachForm, certifications: e.target.value })}
-                                    placeholder="List any relevant certifications, qualifications, or credentials"
-                                    rows={3} maxLength={1000}
-                                />
-                                <span className="form-char-count">{coachForm.certifications.length}/1000</span>
+                        {editingTab === 'certs' ? (
+                            <div className="apply-form">
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="edit-certs">Certifications & Qualifications</label>
+                                    <textarea id="edit-certs" className="form-input form-textarea"
+                                        value={coachForm.certifications}
+                                        onChange={(e) => setCoachForm({ ...coachForm, certifications: e.target.value })}
+                                        placeholder="List any relevant certifications, qualifications, or credentials"
+                                        rows={3} maxLength={1000} />
+                                    <span className="form-char-count">{coachForm.certifications.length}/1000</span>
+                                </div>
+                                <div className="form-group">
+                                    <label className="form-label" htmlFor="edit-linkedin">LinkedIn / Website</label>
+                                    <input id="edit-linkedin" className="form-input" value={coachForm.linkedinUrl}
+                                        onChange={(e) => setCoachForm({ ...coachForm, linkedinUrl: e.target.value })}
+                                        placeholder="https://linkedin.com/in/you" />
+                                </div>
+                                <div className="profile-edit-actions">
+                                    <button className="btn btn-primary" onClick={saveCertifications} disabled={saving}>
+                                        {saving ? 'Saving...' : 'Save Changes'}
+                                    </button>
+                                    <button className="btn btn-outline" onClick={cancelEditing} disabled={saving}>Cancel</button>
+                                </div>
                             </div>
-
-                            <div className="form-group">
-                                <label className="form-label" htmlFor="edit-linkedin">LinkedIn / Website</label>
-                                <input
-                                    id="edit-linkedin" className="form-input"
-                                    value={coachForm.linkedinUrl}
-                                    onChange={(e) => setCoachForm({ ...coachForm, linkedinUrl: e.target.value })}
-                                    placeholder="https://linkedin.com/in/you"
-                                />
+                        ) : (
+                            <div className="profile-view">
+                                <div className="profile-view-row profile-view-row-bio">
+                                    <span className="profile-view-label">Certifications</span>
+                                    <span className="profile-view-value profile-view-bio">{coachForm.certifications || <span className="profile-view-empty">None added</span>}</span>
+                                </div>
+                                <div className="profile-view-row">
+                                    <span className="profile-view-label">LinkedIn / Website</span>
+                                    <span className="profile-view-value">
+                                        {coachForm.linkedinUrl ? (
+                                            <a href={coachForm.linkedinUrl} target="_blank" rel="noopener noreferrer">{coachForm.linkedinUrl}</a>
+                                        ) : <span className="profile-view-empty">Not set</span>}
+                                    </span>
+                                </div>
                             </div>
-
-                            <button
-                                className="btn btn-primary" onClick={saveCertifications}
-                                disabled={saving} style={{ marginTop: 'var(--space-2)' }}
-                            >
-                                {saving ? 'Saving...' : 'Save Changes'}
-                            </button>
-                        </div>
+                        )}
                     </div>
                 )}
+
 
                 {tab === 'status' && coachTabs && (
                     <div className="dashboard-card">
