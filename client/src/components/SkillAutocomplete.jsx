@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { searchSkills } from '../services/api';
 
-export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect, allowCreate = true, excludeIds }) {
+export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect, allowCreate = true, excludeIds, excludeNames }) {
     const [query, setQuery] = useState(value || '');
     const [suggestions, setSuggestions] = useState([]);
     // Track the raw (unfiltered) count from the API so we can tell the
@@ -130,12 +130,14 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
     // - allowCreate must be true
     // - query >= 2 chars
     // - typed text doesn't exactly match a visible canonical suggestion
-    // - we didn't filter out ALL results (meaning the term only maps to already-selected skills)
+    // - typed text doesn't exactly match an already-selected skill name
     const queryTrimmed = query.trim();
     const queryLower = queryTrimmed.toLowerCase();
     const exactMatchVisible = suggestions.some(s => s.isCanonical && s.name.toLowerCase() === queryLower);
     const allResultsFiltered = rawResultCount > 0 && suggestions.length === 0;
-    const showCreateNew = allowCreate && queryTrimmed.length >= 2 && !exactMatchVisible && !allResultsFiltered;
+    const excludeNameSet = excludeNames instanceof Set ? excludeNames : new Set((excludeNames || []).map(n => n.toLowerCase()));
+    const exactMatchAlreadySelected = excludeNameSet.has(queryLower);
+    const showCreateNew = allowCreate && queryTrimmed.length >= 2 && !exactMatchVisible && !exactMatchAlreadySelected;
 
     return (
         <div className={`skill-autocomplete ${className || ''}`} ref={wrapperRef}>

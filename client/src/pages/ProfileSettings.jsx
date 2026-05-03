@@ -601,6 +601,7 @@ export default function ProfileSettings() {
                                         onSelect={handleSkillAutocompleteSelect} onCustomSubmit={addSkillByName}
                                         clearOnSelect placeholder="Type a skill and select or press Enter..." id="edit-skill"
                                         excludeIds={new Set(selectedSkills.map(s => s.id))}
+                                        excludeNames={new Set(selectedSkills.map(s => s.name.toLowerCase()))}
                                     />
                                     <div style={{ marginTop: 'var(--space-3)' }}>
                                         <button type="button" className="btn-ai-helper" onClick={handleAISuggestSkills}
