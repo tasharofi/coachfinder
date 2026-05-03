@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { searchSkills } from '../services/api';
 
-export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect }) {
+export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect, allowCreate = true }) {
     const [query, setQuery] = useState(value || '');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -141,8 +141,8 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                             )}
                         </button>
                     ))}
-                    {/* "Add as new skill" option — always shown when query doesn't exactly match a canonical suggestion */}
-                    {query.trim().length >= 2 && !suggestions.some(s => s.isCanonical && s.name.toLowerCase() === query.trim().toLowerCase()) && (
+                    {/* "Add as new skill" option — only for coach-facing usage */}
+                    {allowCreate && query.trim().length >= 2 && !suggestions.some(s => s.isCanonical && s.name.toLowerCase() === query.trim().toLowerCase()) && (
                         <button
                             className={`skill-suggestion skill-suggestion-create ${suggestions.length === activeIndex ? 'active' : ''}`}
                             type="button"

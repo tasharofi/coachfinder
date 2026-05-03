@@ -119,6 +119,7 @@ export default function Search() {
                             onSelect={(s) => setSkill(s.name)}
                             placeholder="Skill, subject or activity"
                             id="filter-skill"
+                            allowCreate={false}
                         />
                     </div>
                     <div className="filter-cell filter-cell-grow">

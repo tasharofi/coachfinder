@@ -36,6 +36,7 @@ export default function Landing() {
                             onSelect={(s) => setSkill(s.name)}
                             placeholder="Try tennis, piano, maths"
                             id="hero-skill-input"
+                            allowCreate={false}
                         />
                     </div>
                     <div className="hero-search-divider" />
