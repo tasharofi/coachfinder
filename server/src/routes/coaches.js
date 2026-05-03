@@ -199,11 +199,10 @@ router.get('/skills/autocomplete', async (req, res) => {
 
         const lowerQ = q.toLowerCase().trim();
 
-        // 1. Find matching canonical skills
+        // 1. Find matching skills (canonical + user-created)
         const matchedSkills = await prisma.skill.findMany({
             where: {
                 enabled: true,
-                isProposed: false,
                 name: { contains: q },
             },
             select: { id: true, name: true, parentGroup: true },
@@ -214,7 +213,7 @@ router.get('/skills/autocomplete', async (req, res) => {
         const matchedAliases = await prisma.skillAlias.findMany({
             where: {
                 alias: { contains: q },
-                skill: { enabled: true, isProposed: false },
+                skill: { enabled: true },
             },
             select: {
                 alias: true,

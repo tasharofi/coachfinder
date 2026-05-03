@@ -118,11 +118,11 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                 placeholder={placeholder || 'What do you want to learn?'}
                 value={query}
                 onChange={handleInputChange}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                onFocus={() => (suggestions.length > 0 || query.trim().length >= 2) && setShowSuggestions(true)}
                 onKeyDown={handleKeyDown}
                 autoComplete="off"
             />
-            {showSuggestions && suggestions.length > 0 && (
+            {showSuggestions && (suggestions.length > 0 || query.trim().length >= 2) && (
                 <div className="skill-suggestions">
                     {suggestions.map((s, i) => (
                         <button
