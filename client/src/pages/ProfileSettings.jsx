@@ -400,17 +400,12 @@ export default function ProfileSettings() {
     // --- Skill chip handlers ---
     const addSkillByName = async (name) => {
         if (!name.trim()) return;
-        // Check for duplicate
-        if (selectedSkills.some(s => s.name.toLowerCase() === name.toLowerCase())) {
-            showToast('This skill is already added.', 'info');
-            return;
-        }
         try {
             const result = await resolveSkill(name);
             if (result.skill) {
-                // Check duplicate by ID
                 if (selectedSkills.some(s => s.id === result.skill.id)) {
-                    showToast('This skill is already added.', 'info');
+                    const existing = selectedSkills.find(s => s.id === result.skill.id);
+                    showToast(`"${name}" maps to "${existing.name}" which is already added.`, 'info');
                     return;
                 }
                 setSelectedSkills(prev => [...prev, { id: result.skill.id, name: result.skill.name }]);
@@ -426,11 +421,14 @@ export default function ProfileSettings() {
 
     const handleSkillAutocompleteSelect = (s) => {
         if (!s.id) return;
+        // Use the canonical (resolved) name for the chip — not the alias label
+        const canonicalName = s.resolvedName || s.name;
         if (selectedSkills.some(sk => sk.id === s.id)) {
-            showToast('This skill is already added.', 'info');
+            const displayName = s.name !== canonicalName ? `"${s.name}" maps to "${canonicalName}"` : `"${canonicalName}"`;
+            showToast(`${displayName} is already in your skills.`, 'info');
             return;
         }
-        setSelectedSkills(prev => [...prev, { id: s.id, name: s.resolvedName || s.name }]);
+        setSelectedSkills(prev => [...prev, { id: s.id, name: canonicalName }]);
     };
 
     const handleAddAISuggestion = (name) => {
