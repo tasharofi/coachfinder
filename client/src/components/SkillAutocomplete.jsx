@@ -1,9 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { searchSkills } from '../services/api';
 
-export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect, allowCreate = true }) {
+export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect, allowCreate = true, excludeIds }) {
     const [query, setQuery] = useState(value || '');
     const [suggestions, setSuggestions] = useState([]);
+    // Track the raw (unfiltered) count from the API so we can tell the
+    // difference between "no results at all" vs "all results filtered out
+    // because they map to already-selected skills".
+    const [rawResultCount, setRawResultCount] = useState(0);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
     const wrapperRef = useRef(null);
@@ -11,6 +15,9 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
     // Track whether the user is actively typing so the value-sync
     // effect doesn't fight with local edits and cause flicker.
     const isTypingRef = useRef(false);
+
+    // Build a Set from the prop for fast lookups
+    const excludeSet = excludeIds instanceof Set ? excludeIds : new Set(excludeIds || []);
 
     // Only sync from parent prop when it changes externally
     // (e.g. clearOnSelect, programmatic reset), NOT while the user is typing.
@@ -47,6 +54,7 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
         const wordCount = val.trim().split(/\s+/).length;
         if (val.length < 2 || wordCount > 4) {
             setSuggestions([]);
+            setRawResultCount(0);
             setShowSuggestions(false);
             return;
         }
@@ -54,10 +62,19 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
         debounceRef.current = setTimeout(async () => {
             try {
                 const data = await searchSkills(val);
-                setSuggestions(data.suggestions || []);
+                const raw = data.suggestions || [];
+                setRawResultCount(raw.length);
+
+                // Filter out suggestions whose canonical skill ID is already selected
+                const filtered = excludeSet.size > 0
+                    ? raw.filter(s => !excludeSet.has(s.id))
+                    : raw;
+
+                setSuggestions(filtered);
                 setShowSuggestions(true);
             } catch {
                 setSuggestions([]);
+                setRawResultCount(0);
             }
         }, 300);
     };
@@ -109,6 +126,17 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
         }
     };
 
+    // Determine whether the "Add as new skill" should show:
+    // - allowCreate must be true
+    // - query >= 2 chars
+    // - typed text doesn't exactly match a visible canonical suggestion
+    // - we didn't filter out ALL results (meaning the term only maps to already-selected skills)
+    const queryTrimmed = query.trim();
+    const queryLower = queryTrimmed.toLowerCase();
+    const exactMatchVisible = suggestions.some(s => s.isCanonical && s.name.toLowerCase() === queryLower);
+    const allResultsFiltered = rawResultCount > 0 && suggestions.length === 0;
+    const showCreateNew = allowCreate && queryTrimmed.length >= 2 && !exactMatchVisible && !allResultsFiltered;
+
     return (
         <div className={`skill-autocomplete ${className || ''}`} ref={wrapperRef}>
             <input
@@ -141,8 +169,8 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                             )}
                         </button>
                     ))}
-                    {/* "Add as new skill" option — only for coach-facing usage */}
-                    {allowCreate && query.trim().length >= 2 && !suggestions.some(s => s.isCanonical && s.name.toLowerCase() === query.trim().toLowerCase()) && (
+                    {/* "Add as new skill" — only for coach-facing usage, hidden when term maps to already-selected skill */}
+                    {showCreateNew && (
                         <button
                             className={`skill-suggestion skill-suggestion-create ${suggestions.length === activeIndex ? 'active' : ''}`}
                             type="button"
@@ -158,6 +186,12 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                             <span className="skill-suggestion-create-icon">+</span>
                             <span>Add "<strong>{query.trim()}</strong>" as new skill</span>
                         </button>
+                    )}
+                    {/* Show hint when all results were filtered out */}
+                    {allResultsFiltered && (
+                        <div className="skill-suggestion-info">
+                            Already in your skills
+                        </div>
                     )}
                 </div>
             )}
