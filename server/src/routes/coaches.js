@@ -199,10 +199,11 @@ router.get('/skills/autocomplete', async (req, res) => {
 
         const lowerQ = q.toLowerCase().trim();
 
-        // 1. Find matching skills (canonical + user-created)
+        // 1. Find matching canonical/approved skills only (NOT proposed)
         const matchedSkills = await prisma.skill.findMany({
             where: {
                 enabled: true,
+                isProposed: false,
                 name: { contains: q },
             },
             select: { id: true, name: true, parentGroup: true },
@@ -213,7 +214,7 @@ router.get('/skills/autocomplete', async (req, res) => {
         const matchedAliases = await prisma.skillAlias.findMany({
             where: {
                 alias: { contains: q },
-                skill: { enabled: true },
+                skill: { enabled: true, isProposed: false },
             },
             select: {
                 alias: true,
@@ -287,121 +288,144 @@ router.get('/skills/autocomplete', async (req, res) => {
     }
 });
 
-// POST /api/coaches/skills/resolve — Resolve typed text to canonical skill
+// --- Skill name validation helpers ---
+const SKILL_MIN_LENGTH = 2;
+const SKILL_MAX_LENGTH = 60;
+const MAX_PROPOSED_PER_DAY = 5;
+const MAX_SKILLS_PER_COACH = 10;
+
+function validateSkillName(name) {
+    if (!name || name.length < SKILL_MIN_LENGTH) return 'Skill name is too short.';
+    if (name.length > SKILL_MAX_LENGTH) return `Skill name must be under ${SKILL_MAX_LENGTH} characters.`;
+    if (/https?:\/\//i.test(name)) return 'Skill name cannot contain URLs.';
+    if (/[\w.+-]+@[\w-]+\.[\w.]+/.test(name)) return 'Skill name cannot contain email addresses.';
+    if (/(\+?\d[\d\s\-]{7,})/.test(name)) return 'Skill name cannot contain phone numbers.';
+    if (/(.)(\1{5,})/.test(name)) return 'Skill name contains repeated characters.';
+    return null;
+}
+
+function normaliseSkillInput(text) {
+    return text.trim().replace(/\s+/g, ' ');
+}
+
+// POST /api/coaches/skills/resolve — Resolve typed text to canonical skill or create proposed
 router.post('/skills/resolve', authenticate, async (req, res) => {
     try {
-        const { text, force } = req.body;
+        const { text, createNew, source: reqSource } = req.body;
         if (!text || !text.trim()) {
-            return res.status(400).json({ error: 'Text is required' });
+            return res.status(400).json({ error: 'Skill text is required.' });
         }
 
-        const normalised = text.trim().toLowerCase();
+        const cleanName = normaliseSkillInput(text);
+        const lowerName = cleanName.toLowerCase();
+        const source = reqSource || 'manual';
 
-        // If force=true, skip all matching and create a new skill directly
-        if (force) {
-            // Still check if exact canonical name already exists
-            const existing = await prisma.skill.findFirst({
-                where: { name: { equals: text.trim() } },
-            });
-            if (existing) {
-                return res.json({ matched: true, skill: { id: existing.id, name: existing.name } });
+        // Validate
+        const validationError = validateSkillName(cleanName);
+        if (validationError) {
+            return res.status(400).json({ error: validationError });
+        }
+
+        // --- If NOT forcing createNew, try to match existing skills ---
+        if (!createNew) {
+            // 1. Exact match on canonical or proposed skill name (case-insensitive)
+            const allSkills = await prisma.skill.findMany({ where: { enabled: true } });
+            const exactMatch = allSkills.find(s => s.name.toLowerCase() === lowerName);
+            if (exactMatch) {
+                return res.json({
+                    matched: true, isProposed: exactMatch.isProposed,
+                    skill: { id: exactMatch.id, name: exactMatch.name },
+                });
             }
 
-            const proposed = await prisma.skill.create({
-                data: {
-                    name: text.trim(),
-                    enabled: true,
-                    isProposed: true,
-                    proposedBy: req.user.id,
-                },
-            });
-            return res.json({ matched: false, proposed: true, skill: { id: proposed.id, name: proposed.name } });
+            // 2. Alias match (case-insensitive)
+            const allAliases = await prisma.skillAlias.findMany({ include: { skill: true } });
+            const aliasHit = allAliases.find(a => a.alias.toLowerCase() === lowerName && a.skill.enabled);
+            if (aliasHit) {
+                return res.json({
+                    matched: true, isProposed: aliasHit.skill.isProposed,
+                    skill: { id: aliasHit.skill.id, name: aliasHit.skill.name },
+                });
+            }
+
+            // 3. AI-assisted normalisation (high confidence only, no side effects)
+            if (AIService.isEnabled()) {
+                try {
+                    const canonicalSkills = allSkills.filter(s => !s.isProposed);
+                    const aiResult = await AIService.normaliseCoachSkill(cleanName, canonicalSkills.map(s => s.name));
+                    if (aiResult && aiResult.canonicalSkillSuggestion && aiResult.confidence === 'high') {
+                        const aiMatch = canonicalSkills.find(s =>
+                            s.name.toLowerCase() === aiResult.canonicalSkillSuggestion.toLowerCase()
+                        );
+                        if (aiMatch) {
+                            return res.json({
+                                matched: true, isProposed: false,
+                                skill: { id: aiMatch.id, name: aiMatch.name },
+                            });
+                        }
+                    }
+                } catch (aiErr) {
+                    console.error('AI skill normalisation failed (continuing):', aiErr.message);
+                }
+            }
+        } else {
+            // createNew=true — still prevent exact-name duplicates
+            const allSkills = await prisma.skill.findMany();
+            const ciMatch = allSkills.find(s => s.name.toLowerCase() === lowerName);
+            if (ciMatch) {
+                return res.json({
+                    matched: true, isProposed: ciMatch.isProposed,
+                    skill: { id: ciMatch.id, name: ciMatch.name },
+                });
+            }
         }
 
-        // 1. Exact match on canonical name (case-insensitive)
-        let match = await prisma.skill.findFirst({
+        // --- No match → create proposed skill ---
+
+        // Daily proposed skill limit
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const proposedToday = await prisma.skill.count({
             where: {
-                enabled: true,
-                name: { equals: text.trim() },
+                isProposed: true,
+                proposedBy: req.user.id,
+                createdAt: { gte: today },
             },
         });
-
-        // 2. Case-insensitive / normalised match
-        if (!match) {
-            const allSkills = await prisma.skill.findMany({
-                where: { enabled: true, isProposed: false },
+        if (proposedToday >= MAX_PROPOSED_PER_DAY) {
+            return res.status(429).json({
+                error: `You've reached the limit for new custom skills today (${MAX_PROPOSED_PER_DAY}). Please choose from existing suggestions or try again tomorrow.`,
             });
-            match = allSkills.find(s => s.name.toLowerCase() === normalised);
         }
 
-        // 3. Alias match
-        if (!match) {
-            const aliasMatch = await prisma.skillAlias.findFirst({
-                where: { alias: { equals: text.trim() } },
-                include: { skill: true },
-            });
-            if (aliasMatch && aliasMatch.skill.enabled) {
-                match = aliasMatch.skill;
-            }
-        }
-
-        // 4. Normalised alias match
-        if (!match) {
-            const allAliases = await prisma.skillAlias.findMany({
-                include: { skill: true },
-            });
-            const aliasHit = allAliases.find(a => a.alias.toLowerCase() === normalised && a.skill.enabled);
-            if (aliasHit) match = aliasHit.skill;
-        }
-
-        // 4.5. AI-assisted normalisation (suggestion only — no auto-saving aliases)
-        if (!match && AIService.isEnabled()) {
-            try {
-                const allSkillNames = await prisma.skill.findMany({
-                    where: { enabled: true, isProposed: false },
-                    select: { id: true, name: true },
-                });
-                const aiResult = await AIService.normaliseCoachSkill(text.trim(), allSkillNames.map(s => s.name));
-
-                if (aiResult && aiResult.canonicalSkillSuggestion && aiResult.confidence === 'high') {
-                    const aiMatch = allSkillNames.find(s => s.name.toLowerCase() === aiResult.canonicalSkillSuggestion.toLowerCase());
-                    if (aiMatch) {
-                        match = await prisma.skill.findUnique({ where: { id: aiMatch.id } });
-                    }
-                }
-                // Note: No longer auto-saving AI-suggested aliases to prevent pollution
-            } catch (aiErr) {
-                console.error('AI skill normalisation failed (continuing without):', aiErr.message);
-            }
-        }
-
-        if (match) {
-            return res.json({ matched: true, skill: { id: match.id, name: match.name } });
-        }
-
-        // 5. No match — create proposed skill
         const proposed = await prisma.skill.create({
             data: {
-                name: text.trim(),
+                name: cleanName,
                 enabled: true,
                 isProposed: true,
                 proposedBy: req.user.id,
+                source,
             },
         });
 
-        res.json({ matched: false, proposed: true, skill: { id: proposed.id, name: proposed.name } });
+        res.json({
+            matched: false, proposed: true, isProposed: true,
+            skill: { id: proposed.id, name: proposed.name },
+        });
     } catch (error) {
         if (error.code === 'P2002') {
-            // Skill name already exists — find and return it
             const existing = await prisma.skill.findFirst({
-                where: { name: { equals: req.body.text.trim() } },
+                where: { name: { equals: normaliseSkillInput(req.body.text) } },
             });
             if (existing) {
-                return res.json({ matched: true, skill: { id: existing.id, name: existing.name } });
+                return res.json({
+                    matched: true, isProposed: existing.isProposed,
+                    skill: { id: existing.id, name: existing.name },
+                });
             }
         }
         console.error('Skill resolve error:', error);
-        res.status(500).json({ error: 'Failed to resolve skill' });
+        res.status(500).json({ error: 'Failed to resolve skill.' });
     }
 });
 
@@ -514,13 +538,19 @@ router.post('/apply', authenticate, async (req, res) => {
 
         // Handle skill association
         if (skillId) {
+            const skillIds = Array.isArray(skillId) ? skillId : [skillId];
+
+            // Enforce max skills per coach
+            if (skillIds.length > MAX_SKILLS_PER_COACH) {
+                return res.status(400).json({ error: `Maximum ${MAX_SKILLS_PER_COACH} skills allowed per profile.` });
+            }
+
             // Remove existing skills
             await prisma.coachSkill.deleteMany({
                 where: { coachProfileId: profile.id },
             });
 
-            // Add new skill(s) — support single or array
-            const skillIds = Array.isArray(skillId) ? skillId : [skillId];
+            // Add new skill(s)
             for (const sId of skillIds) {
                 const skillExists = await prisma.skill.findUnique({ where: { id: sId } });
                 if (skillExists) {

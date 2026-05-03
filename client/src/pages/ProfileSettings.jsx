@@ -188,50 +188,8 @@ export default function ProfileSettings() {
     const saveCoachProfile = async () => {
         setSaving(true);
         try {
-            // Resolve any skills that were added by name (AI suggestions)
-            // and don't have a real ID yet
-            const resolvedSkills = [];
-            const seenIds = new Set();
-            const failedSkills = [];
-            const droppedDups = [];
-            for (const s of selectedSkills) {
-                if (s.id && !s.id.startsWith('pending-')) {
-                    if (!seenIds.has(s.id)) {
-                        seenIds.add(s.id);
-                        resolvedSkills.push(s);
-                    } else {
-                        droppedDups.push(s.name);
-                    }
-                } else {
-                    try {
-                        const result = await resolveSkill(s.name);
-                        if (result.skill && !seenIds.has(result.skill.id)) {
-                            seenIds.add(result.skill.id);
-                            resolvedSkills.push({ id: result.skill.id, name: result.skill.name });
-                        } else if (result.skill) {
-                            droppedDups.push(s.name);
-                        }
-                    } catch {
-                        failedSkills.push(s);
-                    }
-                }
-            }
-
-            if (droppedDups.length > 0) {
-                console.log('[save] Dropped duplicate skills:', droppedDups);
-            }
-
-            if (failedSkills.length > 0) {
-                // Keep failed skills as pending so the user doesn't lose them
-                setSelectedSkills([...resolvedSkills, ...failedSkills]);
-                showToast(`Could not resolve ${failedSkills.length} skill(s): ${failedSkills.map(s => s.name).join(', ')}. Try again.`, 'error');
-                setSaving(false);
-                return;
-            }
-
-            const skillIds = resolvedSkills.map(s => s.id).filter(Boolean);
-            console.log('[save] selectedSkills:', selectedSkills.length, selectedSkills.map(s => `${s.name}(${s.id?.substring(0,8)})`));
-            console.log('[save] resolvedSkills:', resolvedSkills.length, 'skillIds:', skillIds.length);
+            // All skills have real IDs — just collect and send
+            const skillIds = selectedSkills.map(s => s.id).filter(Boolean);
 
             const response = await updateCoachProfile({
                 headline: coachForm.headline,
@@ -239,15 +197,13 @@ export default function ProfileSettings() {
                 skillId: skillIds,
             });
 
-            // Only update chips after successful save — use the server response
-            console.log('[save] response skills:', response.profile?.skills?.length, response.profile?.skills?.map(cs => cs.skill?.name));
+            // Update chips from server response
             if (response.profile?.skills) {
                 setSelectedSkills(response.profile.skills.map(cs => ({
                     id: cs.skill?.id || cs.skillId,
                     name: cs.skill?.name || 'Unknown',
+                    isProposed: cs.skill?.isProposed || false,
                 })));
-            } else {
-                setSelectedSkills(resolvedSkills);
             }
 
             if (response.pendingFields?.length > 0) {
@@ -257,7 +213,6 @@ export default function ProfileSettings() {
             }
 
             setEditingTab(null);
-            // Refresh pending edits
             const pendingData = await getMyPendingEdits().catch(() => ({ pendingEdits: [] }));
             setPendingEdits(pendingData.pendingEdits || []);
             await refreshUser();
@@ -400,8 +355,15 @@ export default function ProfileSettings() {
     // --- Skill chip handlers ---
     const addSkillByName = async (name, options = {}) => {
         if (!name.trim()) return;
+        if (selectedSkills.length >= 10) {
+            showToast('Maximum 10 skills allowed.', 'info');
+            return;
+        }
         try {
-            const result = await resolveSkill(name, { force: options.force });
+            const result = await resolveSkill(name, {
+                createNew: options.createNew,
+                source: options.source || 'manual',
+            });
             if (result.skill) {
                 if (selectedSkills.some(s => s.id === result.skill.id)) {
                     const existing = selectedSkills.find(s => s.id === result.skill.id);
@@ -412,10 +374,14 @@ export default function ProfileSettings() {
                     }
                     return;
                 }
-                setSelectedSkills(prev => [...prev, { id: result.skill.id, name: result.skill.name }]);
+                setSelectedSkills(prev => [...prev, {
+                    id: result.skill.id,
+                    name: result.skill.name,
+                    isProposed: result.isProposed || false,
+                }]);
             }
-        } catch {
-            showToast('Could not add skill.', 'error');
+        } catch (err) {
+            showToast(err.message || 'Could not add skill.', 'error');
         }
     };
 
@@ -425,25 +391,23 @@ export default function ProfileSettings() {
 
     const handleSkillAutocompleteSelect = (s) => {
         if (!s.id) return;
-        // Use the canonical (resolved) name for the chip — not the alias label
         const canonicalName = s.resolvedName || s.name;
+        if (selectedSkills.length >= 10) {
+            showToast('Maximum 10 skills allowed.', 'info');
+            return;
+        }
         if (selectedSkills.some(sk => sk.id === s.id)) {
             const displayName = s.name !== canonicalName ? `"${s.name}" maps to "${canonicalName}"` : `"${canonicalName}"`;
             showToast(`${displayName} is already in your skills.`, 'info');
             return;
         }
-        setSelectedSkills(prev => [...prev, { id: s.id, name: canonicalName }]);
+        setSelectedSkills(prev => [...prev, { id: s.id, name: canonicalName, isProposed: false }]);
     };
 
-    const handleAddAISuggestion = (name) => {
-        if (selectedSkills.some(s => s.name.toLowerCase() === name.toLowerCase())) {
-            showToast('This skill is already added.', 'info');
-            setSkillSuggestions(prev => prev ? prev.filter(s => s !== name) : null);
-            return;
-        }
-        // Add instantly with a temporary ID — resolved at save time
-        setSelectedSkills(prev => [...prev, { id: `pending-${Date.now()}`, name }]);
+    const handleAddAISuggestion = async (name) => {
+        // AI suggestions follow the exact same flow as manual entry
         setSkillSuggestions(prev => prev ? prev.filter(s => s !== name) : null);
+        await addSkillByName(name, { source: 'ai' });
     };
 
     const handleIgnoreAISuggestion = (name) => {
@@ -624,8 +588,9 @@ export default function ProfileSettings() {
                                     {selectedSkills.length > 0 && (
                                         <div className="skill-chips">
                                             {selectedSkills.map(s => (
-                                                <span key={s.id} className="skill-chip">
+                                                <span key={s.id} className={`skill-chip ${s.isProposed ? 'skill-chip-proposed' : ''}`}>
                                                     {s.name}
+                                                    {s.isProposed && <span className="skill-chip-badge">Pending</span>}
                                                     <button type="button" className="skill-chip-remove" onClick={() => removeSkill(s.id)} title="Remove skill">×</button>
                                                 </span>
                                             ))}

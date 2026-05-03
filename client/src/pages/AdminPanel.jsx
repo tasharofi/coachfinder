@@ -322,7 +322,17 @@ function SkillsTab() {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <strong>{s.name}</strong>
+                                            <span>
+                                                <strong>{s.name}</strong>
+                                                {s.isProposed && s.source && (
+                                                    <span style={{
+                                                        fontSize: '10px', marginLeft: '6px', padding: '1px 5px',
+                                                        borderRadius: '3px', fontWeight: 600, textTransform: 'uppercase',
+                                                        background: s.source === 'ai' ? 'hsl(210, 70%, 90%)' : 'hsl(40, 80%, 90%)',
+                                                        color: s.source === 'ai' ? 'hsl(210, 70%, 35%)' : 'hsl(35, 70%, 35%)',
+                                                    }}>{s.source === 'ai' ? 'AI' : 'Manual'}</span>
+                                                )}
+                                            </span>
                                         )}
                                     </td>
                                     <td style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>{s.parentGroup || '—'}</td>

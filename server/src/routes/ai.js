@@ -9,50 +9,7 @@ router.get('/status', (req, res) => {
     res.json({ available: AIService.isEnabled() });
 });
 
-// POST /api/ai/parse-search — Parse natural-language search query
-router.post('/parse-search', async (req, res) => {
-    try {
-        const { query } = req.body;
-        if (!query || query.trim().length < 5) {
-            return res.json({ parsed: false, reason: 'Query too short' });
-        }
-
-        if (!AIService.isEnabled()) {
-            return res.json({ parsed: false, reason: 'AI not available' });
-        }
-
-        const result = await AIService.parseLearnerSearchQuery(query);
-
-        if (!result || !result.skillQuery) {
-            return res.json({ parsed: false, reason: 'Could not parse query' });
-        }
-
-        // Map sessionMode values to our enum
-        let sessionMode = null;
-        if (result.sessionMode === 'online') sessionMode = 'ONLINE';
-        else if (result.sessionMode === 'in_person') sessionMode = 'IN_PERSON';
-
-        // Map availability
-        let availability = null;
-        if (result.availability) {
-            const avMap = { weekday: 'weekdays', weekend: 'weekends', morning: 'weekdays', afternoon: 'weekdays', evening: 'evenings' };
-            availability = avMap[result.availability] || null;
-        }
-
-        res.json({
-            parsed: true,
-            skillQuery: result.skillQuery,
-            locationQuery: result.locationQuery || null,
-            sessionMode,
-            level: result.level || null,
-            availability,
-            priceIntent: result.priceIntent || null,
-        });
-    } catch (error) {
-        console.error('AI parse search error:', error);
-        res.json({ parsed: false, reason: 'AI error' });
-    }
-});
+// (Removed: AI learner search parsing — learner search uses keyword/autocomplete only)
 
 // POST /api/ai/improve-bio — Improve coach bio text
 router.post('/improve-bio', authenticate, async (req, res) => {

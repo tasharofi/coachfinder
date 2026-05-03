@@ -134,8 +134,8 @@ export const getAdminContacts = () =>
 export const searchSkills = (query) =>
     fetch(`${API_URL}/coaches/skills/autocomplete?q=${encodeURIComponent(query)}`, { headers: getHeaders() }).then(handleResponse);
 
-export const resolveSkill = (text, { force } = {}) =>
-    fetch(`${API_URL}/coaches/skills/resolve`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ text, force }) }).then(handleResponse);
+export const resolveSkill = (text, { createNew, source } = {}) =>
+    fetch(`${API_URL}/coaches/skills/resolve`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ text, createNew, source }) }).then(handleResponse);
 
 // Admin Skill Management
 export const getAdminSkills = (proposed) => {
@@ -210,8 +210,7 @@ export const dismissReport = (id) =>
 export const getAIStatus = () =>
     fetch(`${API_URL}/ai/status`).then(handleResponse);
 
-export const parseSearchQuery = (query) =>
-    fetch(`${API_URL}/ai/parse-search`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ query }) }).then(handleResponse);
+// (Removed: parseSearchQuery — learner search uses keyword/autocomplete only)
 
 export const aiImproveBio = (text, context) =>
     fetch(`${API_URL}/ai/improve-bio`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ text, context }) }).then(handleResponse);
@@ -222,5 +221,4 @@ export const aiImproveHeadline = (text, context) =>
 export const aiSuggestSkills = (context) =>
     fetch(`${API_URL}/ai/suggest-skills`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ context }) }).then(handleResponse);
 
-export const aiNormaliseSkill = (input, existingSkills) =>
-    fetch(`${API_URL}/ai/normalise-skill`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ input, existingSkills }) }).then(handleResponse);
+// (Removed: aiNormaliseSkill — normalisation is handled server-side in resolve)

@@ -151,7 +151,7 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                                 setShowSuggestions(false);
                                 setSuggestions([]);
                                 if (clearOnSelect) { setQuery(''); onChange && onChange(''); }
-                                onCustomSubmit && onCustomSubmit(name, { force: true });
+                                onCustomSubmit && onCustomSubmit(name, { createNew: true });
                             }}
                             onMouseEnter={() => setActiveIndex(suggestions.length)}
                         >

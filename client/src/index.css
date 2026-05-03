@@ -2837,6 +2837,22 @@ select.form-input {
   background: hsl(0, 70%, 50%, 0.1);
 }
 
+.skill-chip-proposed {
+  border-style: dashed;
+  opacity: 0.85;
+}
+.skill-chip-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: hsl(40, 90%, 50%, 0.15);
+  color: hsl(35, 80%, 40%);
+  margin-left: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
 /* AI suggestion row (Add/Ignore) */
 .ai-suggestion-row {
   display: flex;

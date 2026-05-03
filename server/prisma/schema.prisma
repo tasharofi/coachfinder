@@ -85,8 +85,10 @@ model Skill {
   parentGroup String       @default("")
   isProposed  Boolean      @default(false)
   proposedBy  String?
+  source      String       @default("seed")  // "seed" | "manual" | "ai"
   coaches     CoachSkill[]
   aliases     SkillAlias[]
+  createdAt   DateTime     @default(now())
 }
 
 model SkillAlias {
