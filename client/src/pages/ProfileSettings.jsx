@@ -398,14 +398,18 @@ export default function ProfileSettings() {
     };
 
     // --- Skill chip handlers ---
-    const addSkillByName = async (name) => {
+    const addSkillByName = async (name, options = {}) => {
         if (!name.trim()) return;
         try {
-            const result = await resolveSkill(name);
+            const result = await resolveSkill(name, { force: options.force });
             if (result.skill) {
                 if (selectedSkills.some(s => s.id === result.skill.id)) {
                     const existing = selectedSkills.find(s => s.id === result.skill.id);
-                    showToast(`"${name}" maps to "${existing.name}" which is already added.`, 'info');
+                    if (existing.name.toLowerCase() !== name.toLowerCase()) {
+                        showToast(`"${name}" maps to "${existing.name}" which is already added.`, 'info');
+                    } else {
+                        showToast(`"${name}" is already added.`, 'info');
+                    }
                     return;
                 }
                 setSelectedSkills(prev => [...prev, { id: result.skill.id, name: result.skill.name }]);

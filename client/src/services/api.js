@@ -134,8 +134,8 @@ export const getAdminContacts = () =>
 export const searchSkills = (query) =>
     fetch(`${API_URL}/coaches/skills/autocomplete?q=${encodeURIComponent(query)}`, { headers: getHeaders() }).then(handleResponse);
 
-export const resolveSkill = (text) =>
-    fetch(`${API_URL}/coaches/skills/resolve`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ text }) }).then(handleResponse);
+export const resolveSkill = (text, { force } = {}) =>
+    fetch(`${API_URL}/coaches/skills/resolve`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ text, force }) }).then(handleResponse);
 
 // Admin Skill Management
 export const getAdminSkills = (proposed) => {

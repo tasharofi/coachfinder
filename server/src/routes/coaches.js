@@ -291,12 +291,33 @@ router.get('/skills/autocomplete', async (req, res) => {
 // POST /api/coaches/skills/resolve — Resolve typed text to canonical skill
 router.post('/skills/resolve', authenticate, async (req, res) => {
     try {
-        const { text } = req.body;
+        const { text, force } = req.body;
         if (!text || !text.trim()) {
             return res.status(400).json({ error: 'Text is required' });
         }
 
         const normalised = text.trim().toLowerCase();
+
+        // If force=true, skip all matching and create a new skill directly
+        if (force) {
+            // Still check if exact canonical name already exists
+            const existing = await prisma.skill.findFirst({
+                where: { name: { equals: text.trim() } },
+            });
+            if (existing) {
+                return res.json({ matched: true, skill: { id: existing.id, name: existing.name } });
+            }
+
+            const proposed = await prisma.skill.create({
+                data: {
+                    name: text.trim(),
+                    enabled: true,
+                    isProposed: true,
+                    proposedBy: req.user.id,
+                },
+            });
+            return res.json({ matched: false, proposed: true, skill: { id: proposed.id, name: proposed.name } });
+        }
 
         // 1. Exact match on canonical name (case-insensitive)
         let match = await prisma.skill.findFirst({
@@ -334,7 +355,7 @@ router.post('/skills/resolve', authenticate, async (req, res) => {
             if (aliasHit) match = aliasHit.skill;
         }
 
-        // 4.5. AI-assisted normalisation
+        // 4.5. AI-assisted normalisation (suggestion only — no auto-saving aliases)
         if (!match && AIService.isEnabled()) {
             try {
                 const allSkillNames = await prisma.skill.findMany({
@@ -343,36 +364,19 @@ router.post('/skills/resolve', authenticate, async (req, res) => {
                 });
                 const aiResult = await AIService.normaliseCoachSkill(text.trim(), allSkillNames.map(s => s.name));
 
-                if (aiResult && aiResult.canonicalSkillSuggestion && ['high', 'medium'].includes(aiResult.confidence)) {
+                if (aiResult && aiResult.canonicalSkillSuggestion && aiResult.confidence === 'high') {
                     const aiMatch = allSkillNames.find(s => s.name.toLowerCase() === aiResult.canonicalSkillSuggestion.toLowerCase());
                     if (aiMatch) {
                         match = await prisma.skill.findUnique({ where: { id: aiMatch.id } });
-
-                        // Save AI-suggested aliases
-                        if (match && aiResult.suggestedAliases?.length > 0) {
-                            for (const alias of aiResult.suggestedAliases.slice(0, 3)) {
-                                await prisma.skillAlias.upsert({
-                                    where: { skillId_alias: { skillId: match.id, alias: alias.toLowerCase() } },
-                                    create: { skillId: match.id, alias: alias.toLowerCase() },
-                                    update: {},
-                                }).catch(() => {});
-                            }
-                        }
                     }
                 }
+                // Note: No longer auto-saving AI-suggested aliases to prevent pollution
             } catch (aiErr) {
                 console.error('AI skill normalisation failed (continuing without):', aiErr.message);
             }
         }
 
         if (match) {
-            if (match.name.toLowerCase() !== normalised) {
-                await prisma.skillAlias.upsert({
-                    where: { skillId_alias: { skillId: match.id, alias: normalised } },
-                    create: { skillId: match.id, alias: normalised },
-                    update: {},
-                }).catch(() => {});
-            }
             return res.json({ matched: true, skill: { id: match.id, name: match.name } });
         }
 

@@ -141,6 +141,24 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                             )}
                         </button>
                     ))}
+                    {/* "Add as new skill" option — always shown when query doesn't exactly match a canonical suggestion */}
+                    {query.trim().length >= 2 && !suggestions.some(s => s.isCanonical && s.name.toLowerCase() === query.trim().toLowerCase()) && (
+                        <button
+                            className={`skill-suggestion skill-suggestion-create ${suggestions.length === activeIndex ? 'active' : ''}`}
+                            type="button"
+                            onClick={() => {
+                                const name = query.trim();
+                                setShowSuggestions(false);
+                                setSuggestions([]);
+                                if (clearOnSelect) { setQuery(''); onChange && onChange(''); }
+                                onCustomSubmit && onCustomSubmit(name, { force: true });
+                            }}
+                            onMouseEnter={() => setActiveIndex(suggestions.length)}
+                        >
+                            <span className="skill-suggestion-create-icon">+</span>
+                            <span>Add "<strong>{query.trim()}</strong>" as new skill</span>
+                        </button>
+                    )}
                 </div>
             )}
         </div>
