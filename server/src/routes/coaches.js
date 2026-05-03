@@ -197,109 +197,150 @@ router.get('/categories', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch categories' });
     }
 });
-
-// GET /api/coaches/skills/autocomplete — Typeahead suggestions (keyword refinement)
+// GET /api/coaches/skills/autocomplete — Typeahead suggestions
+// mode=learner (default): shows canonical skills + aliases as separate rows
+// mode=coach: shows only canonical skills, uses aliases to find them
 router.get('/skills/autocomplete', async (req, res) => {
     try {
-        const { q } = req.query;
+        const { q, mode } = req.query;
         if (!q || q.length < 2) {
             return res.json({ suggestions: [] });
         }
 
         const lowerQ = q.toLowerCase().trim();
+        const isCoachMode = mode === 'coach';
 
-        // 1. Find matching skills: canonical OR proposed-but-used-by-approved-coaches
+        // Shared skill visibility filter: canonical OR proposed-but-used-by-approved-coaches
+        const skillVisibilityFilter = {
+            enabled: true,
+            OR: [
+                { isProposed: false },
+                { isProposed: true, coaches: { some: { coachProfile: { status: 'APPROVED' } } } },
+            ],
+        };
+
+        // Helper to score relevance (lower = better)
+        const relevanceScore = (text) => {
+            const lower = text.toLowerCase();
+            if (lower === lowerQ) return 0;
+            if (lower.startsWith(lowerQ)) return 1;
+            if (lower.includes(lowerQ)) return 2;
+            return 3;
+        };
+
+        // 1. Find matching skills by name
         const matchedSkills = await prisma.skill.findMany({
-            where: {
-                enabled: true,
-                name: { contains: q },
-                OR: [
-                    { isProposed: false },
-                    // Include proposed skills that are on at least one approved coach profile
-                    { isProposed: true, coaches: { some: { coachProfile: { status: 'APPROVED' } } } },
-                ],
-            },
-            select: { id: true, name: true, parentGroup: true, isProposed: true },
-            take: 10,
+            where: { ...skillVisibilityFilter, name: { contains: q } },
+            select: { id: true, name: true, parentGroup: true },
+            take: 15,
         });
 
-        // 2. Find matching aliases (of canonical or approved-coach-used skills)
+        // 2. Find matching aliases
         const matchedAliases = await prisma.skillAlias.findMany({
             where: {
                 alias: { contains: q },
-                skill: {
-                    enabled: true,
-                    OR: [
-                        { isProposed: false },
-                        { isProposed: true, coaches: { some: { coachProfile: { status: 'APPROVED' } } } },
-                    ],
-                },
+                skill: skillVisibilityFilter,
             },
             select: {
                 alias: true,
                 skill: { select: { id: true, name: true, parentGroup: true } },
             },
-            take: 20,
+            take: 25,
         });
 
-        // 3. Build suggestion list: each item is a display label + the canonical skill it resolves to
+        if (isCoachMode) {
+            // ---- COACH MODE ----
+            // Return only canonical skills. Use alias matches to surface
+            // canonical skills the coach might be looking for.
+            const skillMap = new Map(); // id -> { skill, matchedAliases[], score }
+
+            // Add skills matched by name
+            for (const s of matchedSkills) {
+                if (!skillMap.has(s.id)) {
+                    skillMap.set(s.id, {
+                        id: s.id, name: s.name, parentGroup: s.parentGroup,
+                        matchedAliases: [], score: relevanceScore(s.name),
+                    });
+                }
+            }
+
+            // Add canonical skills found via alias matching
+            for (const a of matchedAliases) {
+                const s = a.skill;
+                if (!skillMap.has(s.id)) {
+                    // Skill not matched by name — found only via alias
+                    skillMap.set(s.id, {
+                        id: s.id, name: s.name, parentGroup: s.parentGroup,
+                        matchedAliases: [a.alias],
+                        score: relevanceScore(a.alias), // score by alias relevance
+                    });
+                } else {
+                    // Skill already in list — collect alias as metadata
+                    const entry = skillMap.get(s.id);
+                    if (a.alias.toLowerCase() !== s.name.toLowerCase()) {
+                        entry.matchedAliases.push(a.alias);
+                    }
+                    // Update score if this alias is more relevant
+                    const aliasScore = relevanceScore(a.alias);
+                    if (aliasScore < entry.score) entry.score = aliasScore;
+                }
+            }
+
+            const suggestions = [...skillMap.values()].map(s => ({
+                id: s.id,
+                name: s.name,
+                label: s.name,
+                parentGroup: s.parentGroup,
+                isCanonical: true,
+                matchedAliases: s.matchedAliases.slice(0, 3), // cap at 3
+                score: s.score,
+            }));
+
+            suggestions.sort((a, b) => {
+                if (a.score !== b.score) return a.score - b.score;
+                return a.label.localeCompare(b.label);
+            });
+
+            return res.json({ suggestions: suggestions.slice(0, 7) });
+        }
+
+        // ---- LEARNER MODE (default) ----
+        // Show canonical skills + aliases as separate selectable rows
         const suggestions = [];
         const seenLabels = new Set();
 
-        // Helper to score relevance (lower = better)
-        const relevanceScore = (text) => {
-            const lower = text.toLowerCase();
-            if (lower === lowerQ) return 0;                    // exact match
-            if (lower.startsWith(lowerQ)) return 1;            // starts with query
-            if (lower.includes(lowerQ)) return 2;              // contains query
-            return 3;
-        };
-
-        // Add canonical skills as suggestions
         for (const s of matchedSkills) {
-            const label = s.name;
-            if (!seenLabels.has(label.toLowerCase())) {
-                seenLabels.add(label.toLowerCase());
+            if (!seenLabels.has(s.name.toLowerCase())) {
+                seenLabels.add(s.name.toLowerCase());
                 suggestions.push({
-                    id: s.id,
-                    name: s.name,
-                    label: s.name,
-                    parentGroup: s.parentGroup,
-                    isCanonical: true,
+                    id: s.id, name: s.name, label: s.name,
+                    parentGroup: s.parentGroup, isCanonical: true,
                     score: relevanceScore(s.name),
                 });
             }
         }
 
-        // Add alias suggestions (show the alias text, resolve to the canonical skill)
         for (const a of matchedAliases) {
-            const aliasLabel = a.alias.charAt(0).toUpperCase() + a.alias.slice(1); // capitalize
+            const aliasLabel = a.alias.charAt(0).toUpperCase() + a.alias.slice(1);
             const canonicalName = a.skill.name;
-
-            // Skip if alias is identical to canonical name
             if (aliasLabel.toLowerCase() === canonicalName.toLowerCase()) continue;
             if (seenLabels.has(aliasLabel.toLowerCase())) continue;
 
             seenLabels.add(aliasLabel.toLowerCase());
             suggestions.push({
-                id: a.skill.id,
-                name: canonicalName,
-                label: aliasLabel,
-                parentGroup: a.skill.parentGroup,
-                isCanonical: false,
+                id: a.skill.id, name: canonicalName, label: aliasLabel,
+                parentGroup: a.skill.parentGroup, isCanonical: false,
                 parentSkill: canonicalName,
                 score: relevanceScore(a.alias),
             });
         }
 
-        // 4. Sort by relevance: exact > starts-with > contains, canonical first within same score
         suggestions.sort((a, b) => {
             if (a.score !== b.score) return a.score - b.score;
             if (a.isCanonical !== b.isCanonical) return a.isCanonical ? -1 : 1;
             return a.label.localeCompare(b.label);
         });
 
-        // 5. Cap at 7 suggestions
         res.json({ suggestions: suggestions.slice(0, 7) });
     } catch (error) {
         console.error('Skills autocomplete error:', error);

@@ -1551,6 +1551,29 @@ select.form-input {
   text-align: center;
 }
 
+/* Main row layout for skill suggestions */
+.skill-suggestion-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+/* "Also matches: ..." helper text in coach mode */
+.skill-suggestion-aliases {
+  display: block;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* Make suggestion button a column layout when aliases are present */
+.skill-suggestion:has(.skill-suggestion-aliases) {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 .skill-loading {
   position: absolute;
   right: var(--space-3);

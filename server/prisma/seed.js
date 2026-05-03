@@ -12,20 +12,83 @@ async function main() {
 
     // Create categories/skills (admin-managed) with aliases and parent groups
     const skillData = [
-        { name: 'Tennis', parentGroup: 'Sport', aliases: ['tennis coach', 'tennis lessons', 'tennis instructor'] },
-        { name: 'Piano', parentGroup: 'Music', aliases: ['piano lessons', 'keyboard', 'piano tutor'] },
-        { name: 'Guitar', parentGroup: 'Music', aliases: ['guitar lessons', 'acoustic guitar', 'electric guitar'] },
-        { name: 'Swimming', parentGroup: 'Sport', aliases: ['swim coach', 'swimming lessons', 'swimming instructor'] },
-        { name: 'Yoga', parentGroup: 'Wellness', aliases: ['yoga instructor', 'yoga teacher', 'yoga class'] },
-        { name: 'Photography', parentGroup: 'Creative', aliases: ['photography lessons', 'camera course', 'photo class'] },
-        { name: 'Cooking', parentGroup: 'Lifestyle', aliases: ['cooking class', 'cooking lessons', 'chef tutor'] },
-        { name: 'Spanish', parentGroup: 'Languages', aliases: ['spanish lessons', 'spanish tutor', 'learn spanish'] },
-        { name: 'Maths', parentGroup: 'Academic Tutoring', aliases: ['mathematics', 'math tutor', 'algebra', 'calculus'] },
-        { name: 'Coding', parentGroup: 'Technology', aliases: ['programming', 'coding lessons', 'learn to code', 'software'] },
-        { name: 'English', parentGroup: 'Academic Tutoring', aliases: ['english tutor', 'english lessons', 'essay writing'] },
-        { name: 'Boxing', parentGroup: 'Sport', aliases: ['boxing coach', 'boxing trainer', 'boxing class'] },
-        { name: 'Dance', parentGroup: 'Creative', aliases: ['dance lessons', 'dance class', 'dance teacher', 'salsa', 'bachata'] },
-        { name: 'Surfing', parentGroup: 'Sport', aliases: ['surf lessons', 'surf coach', 'learn to surf'] },
+        // --- Sports & Fitness ---
+        { name: 'Tennis', parentGroup: 'Sports & Fitness', aliases: ['tennis coach', 'tennis lessons', 'tennis instructor', 'private tennis lessons'] },
+        { name: 'Table Tennis', parentGroup: 'Sports & Fitness', aliases: ['table tennis coach', 'ping pong', 'ping pong lessons'] },
+        { name: 'Swimming', parentGroup: 'Sports & Fitness', aliases: ['swim coach', 'swimming lessons', 'swimming instructor', 'learn to swim'] },
+        { name: 'Boxing', parentGroup: 'Sports & Fitness', aliases: ['boxing coach', 'boxing trainer', 'boxing class', 'boxing lessons'] },
+        { name: 'Soccer', parentGroup: 'Sports & Fitness', aliases: ['soccer coach', 'football coach', 'soccer lessons', 'soccer training'] },
+        { name: 'Basketball', parentGroup: 'Sports & Fitness', aliases: ['basketball coach', 'basketball lessons', 'basketball training'] },
+        { name: 'Yoga', parentGroup: 'Sports & Fitness', aliases: ['yoga instructor', 'yoga teacher', 'yoga class', 'yoga lessons'] },
+        { name: 'Pilates', parentGroup: 'Sports & Fitness', aliases: ['pilates instructor', 'pilates class', 'pilates lessons'] },
+        { name: 'Personal Training', parentGroup: 'Sports & Fitness', aliases: ['personal trainer', 'fitness coach', 'PT', 'gym trainer'] },
+        { name: 'Surfing', parentGroup: 'Sports & Fitness', aliases: ['surf lessons', 'surf coach', 'learn to surf', 'surfing lessons'] },
+        { name: 'Golf', parentGroup: 'Sports & Fitness', aliases: ['golf lessons', 'golf coach', 'golf instructor', 'learn golf'] },
+        { name: 'Running', parentGroup: 'Sports & Fitness', aliases: ['running coach', 'marathon training', 'run coaching'] },
+        { name: 'Martial Arts', parentGroup: 'Sports & Fitness', aliases: ['martial arts instructor', 'self defence', 'karate', 'taekwondo'] },
+        { name: 'Brazilian Jiu-Jitsu', parentGroup: 'Sports & Fitness', aliases: ['BJJ', 'jiu jitsu', 'BJJ coach', 'grappling'] },
+        { name: 'Dance', parentGroup: 'Sports & Fitness', aliases: ['dance lessons', 'dance class', 'dance teacher', 'salsa', 'bachata'] },
+
+        // --- Music ---
+        { name: 'Piano', parentGroup: 'Music', aliases: ['piano lessons', 'piano tutor', 'learn piano', 'keyboard lessons'] },
+        { name: 'Guitar', parentGroup: 'Music', aliases: ['guitar lessons', 'acoustic guitar', 'electric guitar', 'guitar tutor'] },
+        { name: 'Singing', parentGroup: 'Music', aliases: ['singing lessons', 'vocal coach', 'voice lessons', 'voice training'] },
+        { name: 'Drums', parentGroup: 'Music', aliases: ['drum lessons', 'drumming', 'drum teacher', 'percussion'] },
+        { name: 'Violin', parentGroup: 'Music', aliases: ['violin lessons', 'violin tutor', 'fiddle lessons'] },
+        { name: 'Music Theory', parentGroup: 'Music', aliases: ['music theory tutor', 'learn music theory', 'AMEB theory'] },
+        { name: 'Keyboard', parentGroup: 'Music', aliases: ['keyboard lessons', 'keyboard tutor', 'electronic keyboard'] },
+        { name: 'Bass Guitar', parentGroup: 'Music', aliases: ['bass lessons', 'bass guitar lessons', 'learn bass'] },
+
+        // --- Academic Tutoring ---
+        { name: 'Maths', parentGroup: 'Academic Tutoring', aliases: ['mathematics', 'math tutor', 'algebra', 'calculus', 'maths tutor'] },
+        { name: 'English', parentGroup: 'Academic Tutoring', aliases: ['english tutor', 'english lessons', 'english help'] },
+        { name: 'Chemistry', parentGroup: 'Academic Tutoring', aliases: ['chemistry tutor', 'chem tutor', 'VCE chemistry', 'HSC chemistry'] },
+        { name: 'Physics', parentGroup: 'Academic Tutoring', aliases: ['physics tutor', 'physics help', 'VCE physics', 'HSC physics'] },
+        { name: 'Biology', parentGroup: 'Academic Tutoring', aliases: ['biology tutor', 'bio tutor', 'VCE biology', 'HSC biology'] },
+        { name: 'Economics', parentGroup: 'Academic Tutoring', aliases: ['economics tutor', 'econ tutor', 'economics help'] },
+        { name: 'Essay Writing', parentGroup: 'Academic Tutoring', aliases: ['essay help', 'essay tutor', 'academic writing', 'writing tutor'] },
+        { name: 'Science', parentGroup: 'Academic Tutoring', aliases: ['science tutor', 'science help', 'general science'] },
+        { name: 'Reading', parentGroup: 'Academic Tutoring', aliases: ['reading tutor', 'reading help', 'learn to read', 'literacy'] },
+
+        // --- Languages ---
+        { name: 'Spanish', parentGroup: 'Languages', aliases: ['spanish lessons', 'spanish tutor', 'learn spanish', 'spanish speaking'] },
+        { name: 'French', parentGroup: 'Languages', aliases: ['french lessons', 'french tutor', 'learn french'] },
+        { name: 'Mandarin', parentGroup: 'Languages', aliases: ['mandarin lessons', 'chinese lessons', 'learn mandarin', 'mandarin tutor'] },
+        { name: 'Japanese', parentGroup: 'Languages', aliases: ['japanese lessons', 'japanese tutor', 'learn japanese'] },
+        { name: 'Arabic', parentGroup: 'Languages', aliases: ['arabic lessons', 'arabic tutor', 'learn arabic'] },
+        { name: 'English Speaking', parentGroup: 'Languages', aliases: ['ESL', 'english conversation', 'spoken english', 'english speaking practice'] },
+        { name: 'IELTS Preparation', parentGroup: 'Languages', aliases: ['IELTS tutor', 'IELTS coaching', 'IELTS prep', 'IELTS help'] },
+
+        // --- Technology ---
+        { name: 'Coding', parentGroup: 'Technology', aliases: ['programming', 'coding lessons', 'learn to code', 'software development'] },
+        { name: 'Python', parentGroup: 'Technology', aliases: ['python programming', 'python tutor', 'learn python'] },
+        { name: 'JavaScript', parentGroup: 'Technology', aliases: ['javascript tutor', 'JS lessons', 'learn javascript'] },
+        { name: 'Web Development', parentGroup: 'Technology', aliases: ['web dev', 'website development', 'frontend development'] },
+        { name: 'Data Analysis', parentGroup: 'Technology', aliases: ['data analytics', 'data science', 'data analysis tutor'] },
+        { name: 'Excel', parentGroup: 'Technology', aliases: ['excel tutor', 'microsoft excel', 'spreadsheets', 'excel training'] },
+        { name: 'SQL', parentGroup: 'Technology', aliases: ['SQL tutor', 'database', 'learn SQL'] },
+        { name: 'App Development', parentGroup: 'Technology', aliases: ['mobile app development', 'iOS development', 'android development'] },
+
+        // --- Creative ---
+        { name: 'Photography', parentGroup: 'Creative', aliases: ['photography lessons', 'camera course', 'photo class', 'photography tutor'] },
+        { name: 'Photo Editing', parentGroup: 'Creative', aliases: ['photo editing lessons', 'image editing', 'photo retouching'] },
+        { name: 'Portrait Photography', parentGroup: 'Creative', aliases: ['portrait photo', 'portrait photographer', 'headshot photography'] },
+        { name: 'Photoshop', parentGroup: 'Creative', aliases: ['photoshop lessons', 'adobe photoshop', 'photoshop tutor'] },
+        { name: 'Lightroom', parentGroup: 'Creative', aliases: ['lightroom editing', 'adobe lightroom', 'lightroom lessons'] },
+        { name: 'Drawing', parentGroup: 'Creative', aliases: ['drawing lessons', 'sketch lessons', 'learn to draw', 'drawing tutor'] },
+        { name: 'Painting', parentGroup: 'Creative', aliases: ['painting lessons', 'painting class', 'watercolour', 'acrylic painting'] },
+        { name: 'Graphic Design', parentGroup: 'Creative', aliases: ['graphic design lessons', 'design tutor', 'visual design'] },
+        { name: 'Video Editing', parentGroup: 'Creative', aliases: ['video editing lessons', 'video production', 'premiere pro'] },
+        { name: 'Cooking', parentGroup: 'Creative', aliases: ['cooking class', 'cooking lessons', 'chef tutor', 'learn to cook'] },
+
+        // --- Lifestyle & Professional ---
+        { name: 'Public Speaking', parentGroup: 'Lifestyle & Professional', aliases: ['public speaking coach', 'presentation skills', 'speech coaching'] },
+        { name: 'Interview Coaching', parentGroup: 'Lifestyle & Professional', aliases: ['interview prep', 'job interview help', 'mock interviews'] },
+        { name: 'Career Coaching', parentGroup: 'Lifestyle & Professional', aliases: ['career coach', 'career advice', 'career mentor'] },
+        { name: 'Resume Writing', parentGroup: 'Lifestyle & Professional', aliases: ['CV writing', 'resume help', 'resume coach'] },
+        { name: 'Business Coaching', parentGroup: 'Lifestyle & Professional', aliases: ['business coach', 'business mentor', 'startup coaching'] },
+        { name: 'Leadership Coaching', parentGroup: 'Lifestyle & Professional', aliases: ['leadership coach', 'leadership skills', 'management coaching'] },
+        { name: 'Life Coaching', parentGroup: 'Lifestyle & Professional', aliases: ['life coach', 'personal development', 'mindset coaching'] },
     ];
     const createdSkills = {};
 

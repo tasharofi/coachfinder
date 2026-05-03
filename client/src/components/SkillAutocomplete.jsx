@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { searchSkills } from '../services/api';
 
-export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect, allowCreate = true, excludeIds, excludeNames }) {
+export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect, allowCreate = true, excludeIds, excludeNames, mode }) {
     const [query, setQuery] = useState(value || '');
     const [suggestions, setSuggestions] = useState([]);
     // Track the raw (unfiltered) count from the API so we can tell the
@@ -61,7 +61,7 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
 
         debounceRef.current = setTimeout(async () => {
             try {
-                const data = await searchSkills(val);
+                const data = await searchSkills(val, mode);
                 const raw = data.suggestions || [];
                 setRawResultCount(raw.length);
 
@@ -162,12 +162,17 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                             onClick={() => handleSelect(s)}
                             onMouseEnter={() => setActiveIndex(i)}
                         >
-                            <span className="skill-suggestion-name">{s.label || s.name}</span>
-                            {!s.isCanonical && s.parentSkill && (
-                                <span className="skill-suggestion-group">→ {s.parentSkill}</span>
-                            )}
-                            {s.isCanonical && s.parentGroup && (
-                                <span className="skill-suggestion-group">{s.parentGroup}</span>
+                            <div className="skill-suggestion-main">
+                                <span className="skill-suggestion-name">{s.label || s.name}</span>
+                                {!s.isCanonical && s.parentSkill && (
+                                    <span className="skill-suggestion-group">→ {s.parentSkill}</span>
+                                )}
+                                {s.isCanonical && s.parentGroup && (
+                                    <span className="skill-suggestion-group">{s.parentGroup}</span>
+                                )}
+                            </div>
+                            {s.matchedAliases && s.matchedAliases.length > 0 && (
+                                <span className="skill-suggestion-aliases">Also matches: {s.matchedAliases.join(', ')}</span>
                             )}
                         </button>
                     ))}

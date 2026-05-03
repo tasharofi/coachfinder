@@ -131,8 +131,11 @@ export const getAdminContacts = () =>
     fetch(`${API_URL}/admin/contacts`, { headers: getHeaders() }).then(handleResponse);
 
 // Skills autocomplete & resolve
-export const searchSkills = (query) =>
-    fetch(`${API_URL}/coaches/skills/autocomplete?q=${encodeURIComponent(query)}`, { headers: getHeaders() }).then(handleResponse);
+export const searchSkills = (query, mode) => {
+    const params = new URLSearchParams({ q: query });
+    if (mode) params.append('mode', mode);
+    return fetch(`${API_URL}/coaches/skills/autocomplete?${params}`, { headers: getHeaders() }).then(handleResponse);
+};
 
 export const resolveSkill = (text, { createNew, source } = {}) =>
     fetch(`${API_URL}/coaches/skills/resolve`, { method: 'POST', headers: getHeaders(), body: JSON.stringify({ text, createNew, source }) }).then(handleResponse);
