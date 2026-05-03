@@ -193,11 +193,14 @@ export default function ProfileSettings() {
             const resolvedSkills = [];
             const seenIds = new Set();
             const failedSkills = [];
+            const droppedDups = [];
             for (const s of selectedSkills) {
                 if (s.id && !s.id.startsWith('pending-')) {
                     if (!seenIds.has(s.id)) {
                         seenIds.add(s.id);
                         resolvedSkills.push(s);
+                    } else {
+                        droppedDups.push(s.name);
                     }
                 } else {
                     try {
@@ -205,11 +208,17 @@ export default function ProfileSettings() {
                         if (result.skill && !seenIds.has(result.skill.id)) {
                             seenIds.add(result.skill.id);
                             resolvedSkills.push({ id: result.skill.id, name: result.skill.name });
+                        } else if (result.skill) {
+                            droppedDups.push(s.name);
                         }
                     } catch {
                         failedSkills.push(s);
                     }
                 }
+            }
+
+            if (droppedDups.length > 0) {
+                console.log('[save] Dropped duplicate skills:', droppedDups);
             }
 
             if (failedSkills.length > 0) {
@@ -221,6 +230,8 @@ export default function ProfileSettings() {
             }
 
             const skillIds = resolvedSkills.map(s => s.id).filter(Boolean);
+            console.log('[save] selectedSkills:', selectedSkills.length, selectedSkills.map(s => `${s.name}(${s.id?.substring(0,8)})`));
+            console.log('[save] resolvedSkills:', resolvedSkills.length, 'skillIds:', skillIds.length);
 
             const response = await updateCoachProfile({
                 headline: coachForm.headline,
@@ -229,6 +240,7 @@ export default function ProfileSettings() {
             });
 
             // Only update chips after successful save — use the server response
+            console.log('[save] response skills:', response.profile?.skills?.length, response.profile?.skills?.map(cs => cs.skill?.name));
             if (response.profile?.skills) {
                 setSelectedSkills(response.profile.skills.map(cs => ({
                     id: cs.skill?.id || cs.skillId,
