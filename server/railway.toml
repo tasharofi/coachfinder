@@ -1,6 +1,4 @@
-# Railway deployment config
 [build]
-builder = "NIXPACKS"
 buildCommand = "npm install && npx prisma generate"
 
 [deploy]
