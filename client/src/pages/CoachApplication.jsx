@@ -57,7 +57,9 @@ export default function CoachApplication() {
         setUploading(true);
         try {
             const data = await uploadPhoto(file);
-            setPhotoPreview(`http://localhost:3001${data.url}`);
+            // Cloudinary returns a full https URL; local dev returns a /uploads path
+            const previewUrl = data.url.startsWith('http') ? data.url : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}${data.url}`;
+            setPhotoPreview(previewUrl);
         } catch (err) {
             setError('Photo upload failed: ' + err.message);
         } finally {

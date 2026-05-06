@@ -54,9 +54,9 @@ export default function CoachProfile() {
 
                 {/* Header */}
                 <div className="profile-header">
-                    <div className="avatar avatar-lg">
+                    <div className="avatar avatar-lg" style={{ overflow: 'hidden' }}>
                         {coach.avatar ? (
-                            <img src={coach.avatar} alt={coach.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                            <img src={coach.avatar.startsWith('http') ? coach.avatar : coach.avatar} alt={coach.name} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
                         ) : (
                             coach.name?.charAt(0)
                         )}

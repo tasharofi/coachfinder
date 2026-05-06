@@ -56,6 +56,7 @@ export default function Navbar() {
                     </>
                 ) : (
                     <>
+                        <Link to="/become-coach" className="nav-mobile-link nav-mobile-accent" onClick={() => setMenuOpen(false)}>Become a Coach</Link>
                         <Link to="/login" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Sign In</Link>
                         <Link to="/register" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Register</Link>
                     </>

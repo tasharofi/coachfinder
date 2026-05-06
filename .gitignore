@@ -13,6 +13,8 @@ server/dist/
 # Database
 server/prisma/*.db
 server/prisma/*.db-journal
+server/*.db
+server/*.db-journal
 
 # IDE
 .vscode/

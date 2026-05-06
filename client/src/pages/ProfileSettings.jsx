@@ -75,7 +75,7 @@ export default function ProfileSettings() {
                 phone: user.phone || '',
                 avatar: user.avatar || '',
             });
-            setPhotoPreview(user.avatar ? (user.avatar.startsWith('http') ? user.avatar : `http://localhost:3001${user.avatar}`) : null);
+            setPhotoPreview(user.avatar ? (user.avatar.startsWith('http') ? user.avatar : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}${user.avatar}`) : null);
 
             if (isCoach) {
                 const [statusData, pendingData] = await Promise.all([
@@ -126,7 +126,7 @@ export default function ProfileSettings() {
         setUploading(true);
         try {
             const data = await uploadPhoto(file);
-            const url = `http://localhost:3001${data.url}`;
+            const url = data.url.startsWith('http') ? data.url : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}${data.url}`;
             setPhotoPreview(url);
             await updateUserProfile({ avatar: data.url });
             await refreshUser();
