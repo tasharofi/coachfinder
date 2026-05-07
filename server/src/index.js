@@ -14,16 +14,17 @@ const aiRoutes = require('./routes/ai');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// CORS — allow both local dev and production frontend
-const allowedOrigins = [
-    'http://localhost:5173',
-    process.env.FRONTEND_URL,
-].filter(Boolean);
-
+// CORS — allow localhost, configured FRONTEND_URL, and all Vercel preview URLs
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, curl, etc.)
-        if (!origin || allowedOrigins.includes(origin)) {
+        // Allow requests with no origin (mobile apps, curl, Postman, etc.)
+        if (!origin) return callback(null, true);
+
+        const isLocalhost = origin.startsWith('http://localhost');
+        const isVercel = origin.endsWith('.vercel.app');
+        const isFrontend = process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL;
+
+        if (isLocalhost || isVercel || isFrontend) {
             callback(null, true);
         } else {
             callback(new Error(`CORS blocked: ${origin}`));
