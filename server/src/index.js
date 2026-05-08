@@ -14,24 +14,57 @@ const aiRoutes = require('./routes/ai');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// CORS — allow localhost, configured FRONTEND_URL, and all Vercel preview URLs
-app.use(cors({
+// --------------- CORS Configuration ---------------
+// Build the allowed origins list from environment variables
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+];
+
+// Add FRONTEND_URL if configured (e.g. https://coachfinder-indol.vercel.app)
+if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
+// Add any extra origins from ALLOWED_ORIGINS (comma-separated)
+if (process.env.ALLOWED_ORIGINS) {
+    process.env.ALLOWED_ORIGINS.split(',').forEach(o => {
+        const trimmed = o.trim();
+        if (trimmed) allowedOrigins.push(trimmed);
+    });
+}
+
+console.log('CORS allowed origins:', allowedOrigins);
+
+const corsOptions = {
     origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, curl, Postman, etc.)
+        // Allow requests with no origin (curl, Postman, mobile apps, server-to-server)
         if (!origin) return callback(null, true);
 
-        const isLocalhost = origin.startsWith('http://localhost');
-        const isVercel = origin.endsWith('.vercel.app');
-        const isFrontend = process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL;
+        // Allow any *.vercel.app preview deployment
+        if (origin.endsWith('.vercel.app')) return callback(null, true);
 
-        if (isLocalhost || isVercel || isFrontend) {
-            callback(null, true);
-        } else {
-            callback(new Error(`CORS blocked: ${origin}`));
-        }
+        // Allow any localhost origin
+        if (origin.startsWith('http://localhost')) return callback(null, true);
+
+        // Allow explicitly listed origins
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+
+        // Not allowed — but DON'T throw an error (that blocks preflight)
+        // Instead, return false to omit CORS headers and let the browser reject it cleanly
+        console.warn(`CORS: blocked origin ${origin}`);
+        callback(null, false);
     },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
-}));
+};
+
+// Handle OPTIONS preflight requests explicitly — must come BEFORE routes
+app.options('*', cors(corsOptions));
+
+// Apply CORS to all routes
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
