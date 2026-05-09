@@ -145,6 +145,19 @@ app.use((err, req, res, next) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
-    console.log(`CoachFinder API running on port ${PORT}`);
+// Catch uncaught exceptions so we see them in Railway logs
+process.on('uncaughtException', (err) => {
+    console.error('UNCAUGHT EXCEPTION:', err);
+    process.exit(1);
+});
+process.on('unhandledRejection', (err) => {
+    console.error('UNHANDLED REJECTION:', err);
+});
+
+// Bind to 0.0.0.0 explicitly — required for Railway/containerized environments
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`CoachFinder API running on port ${PORT} (0.0.0.0)`);
+}).on('error', (err) => {
+    console.error('SERVER LISTEN ERROR:', err);
+    process.exit(1);
 });
