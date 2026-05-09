@@ -134,6 +134,35 @@ app.post('/api/upload', require('./middleware/auth').authenticate, upload.single
     }
 });
 
+// One-time seed endpoint (protected by JWT_SECRET as a simple auth mechanism)
+app.post('/api/seed', async (req, res) => {
+    const { secret } = req.body;
+    if (!secret || secret !== process.env.JWT_SECRET) {
+        return res.status(403).json({ error: 'Invalid secret' });
+    }
+
+    try {
+        // Run the seed script inline
+        const seedPath = require('path').resolve(__dirname, '../prisma/seed.js');
+        delete require.cache[seedPath]; // clear cache
+        console.log('Running seed script...');
+        
+        // We need to run it as a child process since seed.js calls process.exit
+        const { execSync } = require('child_process');
+        const output = execSync(`node ${seedPath}`, { 
+            cwd: require('path').resolve(__dirname, '..'),
+            env: process.env,
+            timeout: 60000,
+        }).toString();
+        
+        console.log('Seed output:', output);
+        res.json({ success: true, output });
+    } catch (err) {
+        console.error('Seed error:', err.message);
+        res.status(500).json({ error: 'Seed failed', details: err.message, stdout: err.stdout?.toString() });
+    }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
