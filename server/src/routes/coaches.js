@@ -343,7 +343,13 @@ router.get('/skills/autocomplete', async (req, res) => {
             return a.label.localeCompare(b.label);
         });
 
-        res.json({ suggestions: suggestions.slice(0, 7) });
+        // Drop weak substring matches (score >= 3) when stronger results exist
+        const hasStrongMatches = suggestions.some(s => s.score <= 2);
+        const filtered = hasStrongMatches
+            ? suggestions.filter(s => s.score <= 2)
+            : suggestions;
+
+        res.json({ suggestions: filtered.slice(0, 7) });
     } catch (error) {
         console.error('Skills autocomplete error:', error);
         res.status(500).json({ error: 'Failed to search skills' });

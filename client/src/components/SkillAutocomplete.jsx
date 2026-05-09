@@ -164,7 +164,7 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                         >
                             <div className="skill-suggestion-main">
                                 <span className="skill-suggestion-name">{s.label || s.name}</span>
-                                {s.parentGroup && (
+                                {mode === 'coach' && s.parentGroup && (
                                     <span className="skill-suggestion-group">{s.parentGroup}</span>
                                 )}
                             </div>
