@@ -220,17 +220,20 @@ router.get('/skills/autocomplete', async (req, res) => {
         };
 
         // Helper to score relevance (lower = better)
+        // 0 = exact, 1 = starts-with, 2 = word-boundary, 3 = substring, 4 = none
         const relevanceScore = (text) => {
             const lower = text.toLowerCase();
             if (lower === lowerQ) return 0;
             if (lower.startsWith(lowerQ)) return 1;
-            if (lower.includes(lowerQ)) return 2;
-            return 3;
+            const words = lower.split(/\s+/);
+            if (words.some(w => w.startsWith(lowerQ))) return 2;
+            if (lower.includes(lowerQ)) return 3;
+            return 4;
         };
 
         // 1. Find matching skills by name
         const matchedSkills = await prisma.skill.findMany({
-            where: { ...skillVisibilityFilter, name: { contains: q } },
+            where: { ...skillVisibilityFilter, name: { contains: q, mode: 'insensitive' } },
             select: { id: true, name: true, parentGroup: true },
             take: 15,
         });
@@ -238,7 +241,7 @@ router.get('/skills/autocomplete', async (req, res) => {
         // 2. Find matching aliases
         const matchedAliases = await prisma.skillAlias.findMany({
             where: {
-                alias: { contains: q },
+                alias: { contains: q, mode: 'insensitive' },
                 skill: skillVisibilityFilter,
             },
             select: {
@@ -330,7 +333,6 @@ router.get('/skills/autocomplete', async (req, res) => {
             suggestions.push({
                 id: a.skill.id, name: canonicalName, label: aliasLabel,
                 parentGroup: a.skill.parentGroup, isCanonical: false,
-                parentSkill: canonicalName,
                 score: relevanceScore(a.alias),
             });
         }

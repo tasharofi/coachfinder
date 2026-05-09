@@ -164,14 +164,11 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                         >
                             <div className="skill-suggestion-main">
                                 <span className="skill-suggestion-name">{s.label || s.name}</span>
-                                {!s.isCanonical && s.parentSkill && (
-                                    <span className="skill-suggestion-group">→ {s.parentSkill}</span>
-                                )}
-                                {s.isCanonical && s.parentGroup && (
+                                {s.parentGroup && (
                                     <span className="skill-suggestion-group">{s.parentGroup}</span>
                                 )}
                             </div>
-                            {s.matchedAliases && s.matchedAliases.length > 0 && (
+                            {mode === 'coach' && s.matchedAliases && s.matchedAliases.length > 0 && (
                                 <span className="skill-suggestion-aliases">Also matches: {s.matchedAliases.join(', ')}</span>
                             )}
                         </button>
