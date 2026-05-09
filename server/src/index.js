@@ -60,10 +60,7 @@ const corsOptions = {
     credentials: true,
 };
 
-// Handle OPTIONS preflight requests explicitly — must come BEFORE routes
-app.options('*', cors(corsOptions));
-
-// Apply CORS to all routes
+// Apply CORS to all routes (handles OPTIONS preflight automatically)
 app.use(cors(corsOptions));
 
 app.use(express.json());
