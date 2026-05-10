@@ -127,6 +127,23 @@ async function main() {
     });
     console.log('Created admin user:', admin.email);
 
+    // Create CoachFinder admin user (receives email notifications)
+    const cfAdmin = await prisma.user.upsert({
+        where: { email: 'coachfindrapp@gmail.com' },
+        create: {
+            email: 'coachfindrapp@gmail.com',
+            password: adminPassword,
+            name: 'CoachFinder Admin',
+            slug: 'coachfinder-admin',
+            isLearner: false,
+            isCoach: false,
+            isAdmin: true,
+            emailVerified: true,
+        },
+        update: { isAdmin: true },
+    });
+    console.log('Created admin user:', cfAdmin.email);
+
     // Create approved coaches with proper Australian suburb data
     const coaches = [
         {
