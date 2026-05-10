@@ -110,11 +110,11 @@ async function main() {
     const hashedPassword = await bcrypt.hash('password123', 10);
     const adminPassword = await bcrypt.hash(process.env.ADMIN_PASSWORD || 'admin123', 10);
 
-    // Create admin user
+    // Create admin user (original)
     const admin = await prisma.user.upsert({
-        where: { email: process.env.ADMIN_EMAIL || 'admin@coachfinder.com' },
+        where: { email: 'admin@coachfinder.com' },
         create: {
-            email: process.env.ADMIN_EMAIL || 'admin@coachfinder.com',
+            email: 'admin@coachfinder.com',
             password: adminPassword,
             name: 'Admin',
             slug: 'admin',
@@ -123,7 +123,7 @@ async function main() {
             isAdmin: true,
             emailVerified: true,
         },
-        update: {},
+        update: { isAdmin: true },
     });
     console.log('Created admin user:', admin.email);
 
