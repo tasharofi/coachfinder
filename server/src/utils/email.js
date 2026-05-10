@@ -21,6 +21,7 @@ function getTransporter() {
         port,
         secure: port === 465,
         auth: { user, pass },
+        family: 4, // Force IPv4 — Railway containers can't reach Gmail over IPv6
     });
 
     return transporter;
