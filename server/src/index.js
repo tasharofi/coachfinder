@@ -165,7 +165,15 @@ app.post('/api/seed', async (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+    res.json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        email: {
+            smtpConfigured: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+            smtpHost: process.env.SMTP_HOST || 'NOT SET',
+            adminEmail: process.env.ADMIN_EMAIL || 'NOT SET',
+        },
+    });
 });
 
 // Global error handler
