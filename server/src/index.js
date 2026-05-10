@@ -163,6 +163,21 @@ app.post('/api/seed', async (req, res) => {
     }
 });
 
+// Test email endpoint (protected by JWT_SECRET)
+app.post('/api/test-email', async (req, res) => {
+    const { secret } = req.body;
+    if (!secret || secret !== process.env.JWT_SECRET) {
+        return res.status(403).json({ error: 'Invalid secret' });
+    }
+    try {
+        const { sendNewApplicationNotification } = require('./utils/email');
+        const result = await sendNewApplicationNotification('Kamran T', 'kamrant@gmail.com');
+        res.json({ success: true, result: result || 'no result (ADMIN_EMAIL may not be set)' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({
