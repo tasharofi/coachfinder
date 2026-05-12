@@ -1,37 +1,13 @@
-const nodemailer = require('nodemailer');
-// Note: dns.setDefaultResultOrder('ipv4first') is set globally in index.js
+// Email utility — uses Resend HTTP API (SMTP is blocked on Railway)
+// Fallback: logs to console if RESEND_API_KEY is not set
 
-// Create reusable transporter
-let transporter = null;
-
-function getTransporter() {
-    if (transporter) return transporter;
-
-    const host = process.env.SMTP_HOST;
-    const port = parseInt(process.env.SMTP_PORT || '587');
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
-
-    if (!host || !user || !pass) {
-        console.warn('[Email] SMTP not configured — emails will be logged to console only');
-        return null;
-    }
-
-    transporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-    });
-
-    return transporter;
-}
+const RESEND_API_URL = 'https://api.resend.com/emails';
 
 async function sendEmail({ to, subject, html, text }) {
-    const transport = getTransporter();
-    const from = process.env.SMTP_FROM || 'CoachFinder <noreply@coachfinder.com>';
+    const apiKey = process.env.RESEND_API_KEY;
+    const from = process.env.EMAIL_FROM || 'CoachFinder <onboarding@resend.dev>';
 
-    if (!transport) {
+    if (!apiKey) {
         console.log(`[Email] Would send to: ${to}`);
         console.log(`[Email] Subject: ${subject}`);
         console.log(`[Email] Body: ${text || html}`);
@@ -39,9 +15,24 @@ async function sendEmail({ to, subject, html, text }) {
     }
 
     try {
-        const info = await transport.sendMail({ from, to, subject, html, text });
-        console.log(`[Email] Sent to ${to}: ${info.messageId}`);
-        return info;
+        const response = await fetch(RESEND_API_URL, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ from, to, subject, html, text }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error(`[Email] Failed to send to ${to}:`, data.message || JSON.stringify(data));
+            return null;
+        }
+
+        console.log(`[Email] Sent to ${to}: ${data.id}`);
+        return { messageId: data.id };
     } catch (error) {
         console.error(`[Email] Failed to send to ${to}:`, error.message);
         return null;
