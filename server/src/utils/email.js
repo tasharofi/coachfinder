@@ -1,8 +1,5 @@
 const nodemailer = require('nodemailer');
-const dns = require('dns');
-
-// Force IPv4 globally — Railway containers can't reach Gmail over IPv6
-dns.setDefaultResultOrder('ipv4first');
+// Note: dns.setDefaultResultOrder('ipv4first') is set globally in index.js
 
 // Create reusable transporter
 let transporter = null;

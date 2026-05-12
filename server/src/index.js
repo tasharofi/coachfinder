@@ -1,3 +1,7 @@
+// Force IPv4 DNS resolution — must be first line before any imports
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -163,18 +167,31 @@ app.post('/api/seed', async (req, res) => {
     }
 });
 
-// Test email endpoint (protected by JWT_SECRET)
+// Test email endpoint (protected by JWT_SECRET) — uses sendEmail directly for full error visibility
 app.post('/api/test-email', async (req, res) => {
     const { secret } = req.body;
     if (!secret || secret !== process.env.JWT_SECRET) {
         return res.status(403).json({ error: 'Invalid secret' });
     }
+    const adminEmail = process.env.ADMIN_EMAIL;
+    if (!adminEmail) {
+        return res.json({ success: false, error: 'ADMIN_EMAIL env var is not set' });
+    }
     try {
-        const { sendNewApplicationNotification } = require('./utils/email');
-        const result = await sendNewApplicationNotification('Kamran T', 'kamrant@gmail.com');
-        res.json({ success: true, result: result || 'no result (ADMIN_EMAIL may not be set)' });
+        const { sendEmail } = require('./utils/email');
+        const result = await sendEmail({
+            to: adminEmail,
+            subject: 'CoachFinder Test Email',
+            html: '<h2>Test Email</h2><p>If you see this, SMTP is working! 🎉</p><p>New coach application from <strong>Kamran T</strong> (kamrant@gmail.com).</p>',
+            text: 'Test email — SMTP is working. New coach application from Kamran T.',
+        });
+        if (result && result.messageId) {
+            res.json({ success: true, messageId: result.messageId });
+        } else {
+            res.json({ success: false, error: 'sendEmail returned null — check Railway logs for [Email] Failed line' });
+        }
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ success: false, error: err.message, stack: err.stack });
     }
 });
 
