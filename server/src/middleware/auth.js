@@ -79,4 +79,14 @@ const requireApprovedCoach = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticate, optionalAuth, requireAdmin, requireApprovedCoach };
+const requireVerified = (req, res, next) => {
+    if (!req.user || !req.user.emailVerified) {
+        return res.status(403).json({
+            error: 'Please verify your email to perform this action',
+            code: 'EMAIL_NOT_VERIFIED',
+        });
+    }
+    next();
+};
+
+module.exports = { authenticate, optionalAuth, requireAdmin, requireApprovedCoach, requireVerified };

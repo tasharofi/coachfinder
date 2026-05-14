@@ -100,9 +100,15 @@ export default function CoachProfile() {
                 </div>
 
                 {/* CTA */}
-                <button className="btn btn-accent btn-lg" onClick={() => setShowContact(true)} style={{ width: '100%', marginBottom: 'var(--space-8)' }} id="profile-contact-btn">
-                    Contact {coach.name?.split(' ')[0]}
-                </button>
+                {user && !user.emailVerified ? (
+                    <div className="alert alert-warning" style={{ marginBottom: 'var(--space-8)' }}>
+                        📧 Please verify your email before sending a request to a coach.
+                    </div>
+                ) : (
+                    <button className="btn btn-accent btn-lg" onClick={() => setShowContact(true)} style={{ width: '100%', marginBottom: 'var(--space-8)' }} id="profile-contact-btn">
+                        Contact {coach.name?.split(' ')[0]}
+                    </button>
+                )}
 
                 {/* Skills */}
                 {cp?.skills?.length > 0 && (

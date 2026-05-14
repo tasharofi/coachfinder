@@ -2192,6 +2192,69 @@ select.form-input {
   color: var(--color-success);
 }
 
+.alert-warning {
+  background: #FEF3C7;
+  color: #92400E;
+  border: 1px solid #FDE68A;
+}
+
+/* Email Verification Banner */
+.verify-email-banner {
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+  border: 1px solid #FCD34D;
+  border-radius: var(--border-radius);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.verify-email-banner-content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.verify-email-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.verify-email-text {
+  font-size: var(--font-size-sm);
+  color: #78350F;
+  line-height: 1.5;
+}
+
+.verify-email-resend {
+  background: none;
+  border: none;
+  color: #D97706;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  text-decoration: underline;
+}
+
+.verify-email-resend:hover {
+  color: #B45309;
+}
+
+.verify-email-resend:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.verify-email-sent {
+  color: #065F46;
+  font-weight: 600;
+}
+
+.verify-email-error {
+  color: var(--color-error);
+  font-weight: 500;
+}
+
 /* ============================================
    Avatar
    ============================================ */

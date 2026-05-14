@@ -132,6 +132,26 @@ async function sendNewApplicationNotification(coachName, coachEmail) {
     });
 }
 
+async function sendVerificationEmail(userEmail, userName, verificationLink) {
+    return sendEmail({
+        to: userEmail,
+        subject: 'Verify your CoachFinder email',
+        html: `
+            <h2>Hi ${userName},</h2>
+            <p>Thanks for signing up to CoachFinder! Please verify your email address by clicking the button below.</p>
+            <p style="margin: 24px 0;">
+                <a href="${verificationLink}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">Verify Email</a>
+            </p>
+            <p>Or copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #6366f1;">${verificationLink}</p>
+            <p>This link expires in 24 hours.</p>
+            <br>
+            <p>— The CoachFinder Team</p>
+        `,
+        text: `Hi ${userName}, verify your email by visiting: ${verificationLink} — this link expires in 24 hours.`,
+    });
+}
+
 module.exports = {
     sendEmail,
     sendCoachApprovedEmail,
@@ -139,4 +159,5 @@ module.exports = {
     sendContactRequestToCoach,
     sendContactConfirmationToLearner,
     sendNewApplicationNotification,
+    sendVerificationEmail,
 };

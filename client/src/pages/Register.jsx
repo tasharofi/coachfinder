@@ -40,10 +40,11 @@ export default function Register() {
         try {
             const data = await registerApi({ ...form, intent: intent || 'learner' });
             loginUser(data.user, data.token);
+            // Show brief notice, then navigate
             if (intent === 'coach') {
                 navigate('/apply-coach');
             } else {
-                navigate('/search');
+                navigate('/dashboard');
             }
         } catch (err) {
             setError(err.message);

@@ -9,6 +9,7 @@ import {
 import SuburbAutocomplete from '../components/SuburbAutocomplete';
 import AvailabilityPicker from '../components/AvailabilityPicker';
 import SkillAutocomplete from '../components/SkillAutocomplete';
+import VerifyEmailBanner from '../components/VerifyEmailBanner';
 
 const STATUS_CONFIG = {
     DRAFT: { label: 'Draft', className: 'draft', icon: '📝', message: 'Your coach application is saved as a draft.' },
@@ -444,6 +445,8 @@ export default function ProfileSettings() {
                 <h1 className="profile-settings-title">Profile Settings</h1>
                 <p className="profile-settings-subtitle">{user.email}</p>
             </div>
+
+            <VerifyEmailBanner />
 
             {/* Toast notification */}
             {toast && (

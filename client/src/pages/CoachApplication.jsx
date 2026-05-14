@@ -5,6 +5,7 @@ import { applyAsCoach, getCoachStatus, uploadPhoto, resolveSkill } from '../serv
 import SuburbAutocomplete from '../components/SuburbAutocomplete';
 import AvailabilityPicker from '../components/AvailabilityPicker';
 import SkillAutocomplete from '../components/SkillAutocomplete';
+import VerifyEmailBanner from '../components/VerifyEmailBanner';
 
 export default function CoachApplication() {
     const navigate = useNavigate();
@@ -273,8 +274,14 @@ export default function CoachApplication() {
                         </div>
                     </div>
 
-                    <button type="submit" className="btn btn-accent btn-lg" disabled={loading} style={{ width: '100%' }}>
-                        {loading ? 'Submitting...' : 'Submit Application'}
+                    {!user?.emailVerified && (
+                        <div className="alert alert-warning" style={{ marginBottom: 'var(--space-4)' }}>
+                            📧 Please verify your email before submitting your coach application.
+                        </div>
+                    )}
+
+                    <button type="submit" className="btn btn-accent btn-lg" disabled={loading || !user?.emailVerified} style={{ width: '100%' }}>
+                        {loading ? 'Submitting...' : !user?.emailVerified ? 'Verify Email to Submit' : 'Submit Application'}
                     </button>
                 </form>
             </div>

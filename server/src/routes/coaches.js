@@ -1,6 +1,6 @@
 const express = require('express');
 const prisma = require('../utils/prisma');
-const { authenticate, optionalAuth } = require('../middleware/auth');
+const { authenticate, optionalAuth, requireVerified } = require('../middleware/auth');
 const { track } = require('../utils/analytics');
 const { sendNewApplicationNotification } = require('../utils/email');
 const { getNearbyPostcodes, findSuburb } = require('../utils/suburbs-data');
@@ -544,7 +544,7 @@ router.get('/slug/:slug', optionalAuth, async (req, res) => {
 });
 
 // POST /api/coaches/apply — Submit/update coach application
-router.post('/apply', authenticate, async (req, res) => {
+router.post('/apply', authenticate, requireVerified, async (req, res) => {
     try {
         const {
             headline, bio, skillId, sessionMode, suburb, state, postcode,

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getMyContactRequests, getCoachStatus } from '../services/api';
+import VerifyEmailBanner from '../components/VerifyEmailBanner';
 
 const STATUS_CONFIG = {
     DRAFT: { label: 'Draft', className: 'draft', message: 'Your coach application is saved as a draft. Complete and submit it to be reviewed.' },
@@ -55,6 +56,7 @@ export default function Dashboard() {
 
     return (
         <div className="dashboard">
+            <VerifyEmailBanner />
             <div className="dashboard-header">
                 <div className="dashboard-header-row">
                     <div>

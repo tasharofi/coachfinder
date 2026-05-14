@@ -1,13 +1,13 @@
 const express = require('express');
 const prisma = require('../utils/prisma');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, requireVerified } = require('../middleware/auth');
 const { track } = require('../utils/analytics');
 const { sendContactRequestToCoach, sendContactConfirmationToLearner } = require('../utils/email');
 
 const router = express.Router();
 
 // POST /api/contacts — Submit a contact/booking request
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, requireVerified, async (req, res) => {
     try {
         const {
             coachProfileId, learnerName, learnerEmail, learnerPhone,

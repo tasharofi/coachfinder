@@ -32,6 +32,12 @@ export const login = (data) =>
 export const getMe = () =>
     fetch(`${API_URL}/auth/me`, { headers: getHeaders() }).then(handleResponse);
 
+export const verifyEmail = (token) =>
+    fetch(`${API_URL}/auth/verify-email?token=${token}`, { headers: getHeaders() }).then(handleResponse);
+
+export const resendVerification = () =>
+    fetch(`${API_URL}/auth/resend-verification`, { method: 'POST', headers: getHeaders() }).then(handleResponse);
+
 // Coaches
 export const searchCoaches = (params = {}) => {
     const query = new URLSearchParams(params).toString();

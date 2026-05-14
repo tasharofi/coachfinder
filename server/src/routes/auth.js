@@ -1,12 +1,34 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const prisma = require('../utils/prisma');
 const { generateToken } = require('../utils/jwt');
 const { generateSlug, ensureUniqueSlug } = require('../utils/slug');
 const { authenticate } = require('../middleware/auth');
+const { sendVerificationEmail } = require('../utils/email');
 
 const router = express.Router();
+
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://coachfinder-indol.vercel.app';
+
+async function createAndSendVerification(userId, userEmail, userName) {
+    // Delete any existing tokens for this user
+    await prisma.emailVerification.deleteMany({ where: { userId } });
+
+    const token = crypto.randomUUID();
+    await prisma.emailVerification.create({
+        data: {
+            userId,
+            token,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        },
+    });
+
+    const verificationLink = `${FRONTEND_URL}/verify-email?token=${token}`;
+    await sendVerificationEmail(userEmail, userName, verificationLink);
+    return token;
+}
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -128,8 +150,14 @@ router.post('/register', async (req, res) => {
             },
         });
 
-        const token = generateToken(user.id);
-        res.status(201).json({ user, token });
+        const authToken = generateToken(user.id);
+
+        // Send verification email (non-blocking)
+        createAndSendVerification(user.id, user.email, user.name).catch((err) => {
+            console.error('[Email] Failed to send verification:', err.message);
+        });
+
+        res.status(201).json({ user, token: authToken });
     } catch (error) {
         console.error('Register error:', error);
         res.status(500).json({ error: 'Registration failed' });
@@ -244,6 +272,65 @@ router.put('/profile', authenticate, async (req, res) => {
     } catch (error) {
         console.error('Update profile error:', error);
         res.status(500).json({ error: 'Failed to update profile' });
+    }
+});
+
+// GET /api/auth/verify-email?token=xxx — Verify email from link
+router.get('/verify-email', async (req, res) => {
+    try {
+        const { token } = req.query;
+        if (!token) {
+            return res.status(400).json({ error: 'Verification token is required' });
+        }
+
+        const verification = await prisma.emailVerification.findUnique({
+            where: { token },
+            include: { user: { select: { id: true, emailVerified: true } } },
+        });
+
+        if (!verification) {
+            return res.status(400).json({ error: 'Invalid or expired verification link' });
+        }
+
+        if (verification.expiresAt < new Date()) {
+            await prisma.emailVerification.delete({ where: { id: verification.id } });
+            return res.status(400).json({ error: 'Verification link has expired. Please request a new one.' });
+        }
+
+        // Mark user as verified
+        await prisma.user.update({
+            where: { id: verification.userId },
+            data: { emailVerified: true },
+        });
+
+        // Clean up all tokens for this user
+        await prisma.emailVerification.deleteMany({ where: { userId: verification.userId } });
+
+        res.json({ success: true, message: 'Email verified successfully!' });
+    } catch (error) {
+        console.error('Verify email error:', error);
+        res.status(500).json({ error: 'Verification failed' });
+    }
+});
+
+// POST /api/auth/resend-verification — Resend verification email
+router.post('/resend-verification', authenticate, async (req, res) => {
+    try {
+        if (req.user.emailVerified) {
+            return res.json({ message: 'Email is already verified' });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: req.user.id },
+            select: { id: true, email: true, name: true },
+        });
+
+        await createAndSendVerification(user.id, user.email, user.name);
+
+        res.json({ message: 'Verification email sent. Please check your inbox.' });
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.status(500).json({ error: 'Failed to resend verification email' });
     }
 });
 

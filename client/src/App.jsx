@@ -11,6 +11,7 @@ import BecomeCoach from './pages/BecomeCoach';
 import CoachApplication from './pages/CoachApplication';
 import AdminPanel from './pages/AdminPanel';
 import ProfileSettings from './pages/ProfileSettings';
+import VerifyEmail from './pages/VerifyEmail';
 
 function ProtectedRoute({ children }) {
     const { user, loading } = useAuth();
@@ -36,6 +37,7 @@ export default function App() {
                     <Route path="/coach/:slug" element={<CoachProfile />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/verify-email" element={<VerifyEmail />} />
                     <Route path="/become-coach" element={<BecomeCoach />} />
                     <Route path="/apply-coach" element={<ProtectedRoute><CoachApplication /></ProtectedRoute>} />
                     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

@@ -32,22 +32,32 @@ enum ContactRequestStatus {
 // --- Models ---
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  password      String?
-  googleId      String?        @unique
-  name          String
-  avatar        String?
-  slug          String         @unique
-  isLearner     Boolean        @default(true)
-  isCoach       Boolean        @default(false)
-  isAdmin       Boolean        @default(false)
-  emailVerified Boolean        @default(false)
-  phone         String?
-  suspended     Boolean        @default(false)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  coachProfile  CoachProfile?
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  password           String?
+  googleId           String?             @unique
+  name               String
+  avatar             String?
+  slug               String              @unique
+  isLearner          Boolean             @default(true)
+  isCoach            Boolean             @default(false)
+  isAdmin            Boolean             @default(false)
+  emailVerified      Boolean             @default(false)
+  phone              String?
+  suspended          Boolean             @default(false)
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  coachProfile       CoachProfile?
+  emailVerifications EmailVerification[]
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model CoachProfile {
