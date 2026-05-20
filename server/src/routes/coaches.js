@@ -360,7 +360,7 @@ router.get('/skills/autocomplete', async (req, res) => {
 const SKILL_MIN_LENGTH = 2;
 const SKILL_MAX_LENGTH = 60;
 const MAX_PROPOSED_PER_DAY = 5;
-const MAX_SKILLS_PER_COACH = 10;
+const MAX_SKILLS_PER_COACH = 5;
 
 function validateSkillName(name) {
     if (!name || name.length < SKILL_MIN_LENGTH) return 'Skill name is too short.';

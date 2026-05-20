@@ -7,15 +7,19 @@ import AvailabilityPicker from '../components/AvailabilityPicker';
 import SkillAutocomplete from '../components/SkillAutocomplete';
 import VerifyEmailBanner from '../components/VerifyEmailBanner';
 
+const MAX_SKILLS = 5;
+
 export default function CoachApplication() {
     const navigate = useNavigate();
     const { user, refreshUser } = useAuth();
     const [existingStatus, setExistingStatus] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
     const [uploading, setUploading] = useState(false);
+    const [selectedSkills, setSelectedSkills] = useState([]);
+    const [skillInput, setSkillInput] = useState('');
 
     const [form, setForm] = useState({
-        headline: '', bio: '', skillId: '', skillText: '', sessionMode: 'BOTH',
+        headline: '', bio: '', sessionMode: 'BOTH',
         suburb: '', state: '', postcode: '', lat: null, lng: null,
         serviceRadius: '', hourlyRate: '', yearsExp: '',
         certifications: '', linkedinUrl: '', phone: '', email: user?.email || '',
@@ -38,8 +42,6 @@ export default function CoachApplication() {
                 const p = d.profile;
                 setForm({
                     headline: p.headline || '', bio: p.bio || '',
-                    skillId: p.skills?.[0]?.skillId || '',
-                    skillText: p.skills?.[0]?.skill?.name || '',
                     sessionMode: p.sessionMode || 'BOTH',
                     suburb: p.suburb || '', state: p.state || '', postcode: p.postcode || '',
                     lat: p.lat, lng: p.lng, serviceRadius: p.serviceRadius || '',
@@ -48,6 +50,14 @@ export default function CoachApplication() {
                     phone: p.phone || '', email: p.email || user?.email || '',
                     availability: (() => { try { return JSON.parse(p.availability || '[]'); } catch { return []; } })(),
                 });
+                // Pre-fill existing skills
+                if (p.skills?.length > 0) {
+                    setSelectedSkills(p.skills.map(cs => ({
+                        id: cs.skillId || cs.skill?.id,
+                        name: cs.skill?.name || 'Unknown',
+                        isProposed: cs.skill?.status === 'PROPOSED',
+                    })));
+                }
             }
         }).catch(() => {});
     }, [user, navigate]);
@@ -58,7 +68,6 @@ export default function CoachApplication() {
         setUploading(true);
         try {
             const data = await uploadPhoto(file);
-            // Cloudinary returns a full https URL; local dev returns a /uploads path
             const previewUrl = data.url.startsWith('http') ? data.url : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}${data.url}`;
             setPhotoPreview(previewUrl);
         } catch (err) {
@@ -75,10 +84,63 @@ export default function CoachApplication() {
         }));
     };
 
+    // --- Multi-skill handlers ---
+    const handleSkillSelect = (s) => {
+        if (!s.id) return;
+        const canonicalName = s.resolvedName || s.name;
+        if (selectedSkills.length >= MAX_SKILLS) return;
+        if (selectedSkills.some(sk => sk.id === s.id)) {
+            setError(`"${canonicalName}" is already added.`);
+            return;
+        }
+        setSelectedSkills(prev => [...prev, { id: s.id, name: canonicalName, isProposed: false }]);
+        setSkillInput('');
+        setError('');
+    };
+
+    const handleCustomSkill = async (name, opts) => {
+        if (selectedSkills.length >= MAX_SKILLS) return;
+        const trimmed = name.trim();
+        if (trimmed.length < 2 || trimmed.length > 60) {
+            setError('Skill name must be 2–60 characters.');
+            return;
+        }
+        // Check for duplicates (case-insensitive)
+        if (selectedSkills.some(sk => sk.name.toLowerCase() === trimmed.toLowerCase())) {
+            setError(`"${trimmed}" is already added.`);
+            return;
+        }
+        try {
+            const result = await resolveSkill(trimmed);
+            if (result.skill) {
+                if (selectedSkills.some(sk => sk.id === result.skill.id)) {
+                    setError(`"${trimmed}" maps to "${result.skill.name}" which is already added.`);
+                    return;
+                }
+                setSelectedSkills(prev => [...prev, {
+                    id: result.skill.id,
+                    name: result.skill.name,
+                    isProposed: result.isProposed || false,
+                }]);
+            }
+        } catch (err) {
+            setError(err.message || 'Could not add skill.');
+        }
+        setSkillInput('');
+    };
+
+    const removeSkill = (skillId) => {
+        setSelectedSkills(prev => prev.filter(s => s.id !== skillId));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.headline || !form.bio || !form.email) {
             setError('Please fill in headline, bio, and email.');
+            return;
+        }
+        if (selectedSkills.length === 0) {
+            setError('Please add at least one skill.');
             return;
         }
         if (!form.hourlyRate || parseFloat(form.hourlyRate) <= 0) {
@@ -88,23 +150,12 @@ export default function CoachApplication() {
         setError('');
         setLoading(true);
         try {
-            // Resolve skill text to canonical skill ID if needed
-            let resolvedSkillId = form.skillId;
-            if (form.skillText && !form.skillId) {
-                try {
-                    const result = await resolveSkill(form.skillText);
-                    resolvedSkillId = result.skill?.id || '';
-                } catch {
-                    // Continue without skill if resolve fails
-                }
-            }
-
             await applyAsCoach({
                 ...form,
                 hourlyRate: parseFloat(form.hourlyRate),
                 yearsExp: parseInt(form.yearsExp) || 0,
                 availability: JSON.stringify(form.availability),
-                skillId: resolvedSkillId || undefined,
+                skillId: selectedSkills.map(s => s.id),
             });
             setSuccess(true);
             await refreshUser();
@@ -156,6 +207,7 @@ export default function CoachApplication() {
     }
 
     const suburbDisplay = form.suburb ? `${form.suburb}, ${form.state} ${form.postcode}` : '';
+    const atLimit = selectedSkills.length >= MAX_SKILLS;
 
     return (
         <div className="apply-page">
@@ -182,16 +234,39 @@ export default function CoachApplication() {
                         </div>
                     </div>
 
-                    {/* Skill / What do you teach */}
+                    {/* Skills — multi-select with chips */}
                     <div className="form-group">
                         <label className="form-label" htmlFor="apply-skill">What do you teach? *</label>
-                        <SkillAutocomplete
-                            value={form.skillText}
-                            onChange={(val) => setForm({ ...form, skillText: val, skillId: '' })}
-                            onSelect={(s) => setForm({ ...form, skillText: s.name, skillId: s.id })}
-                            placeholder="e.g. Piano, Tennis, Maths..."
-                            id="apply-skill"
-                        />
+                        <p className="form-helper">Add up to {MAX_SKILLS} skills, subjects or activities you can teach.</p>
+                        {selectedSkills.length > 0 && (
+                            <div className="skill-chips">
+                                {selectedSkills.map(s => (
+                                    <span key={s.id} className={`skill-chip ${s.isProposed ? 'skill-chip-proposed' : ''}`}>
+                                        {s.name}
+                                        {s.isProposed && <span className="skill-chip-badge">Pending</span>}
+                                        <button type="button" className="skill-chip-remove" onClick={() => removeSkill(s.id)} title="Remove skill">×</button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                        {atLimit ? (
+                            <p className="form-helper" style={{ color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
+                                You can add up to {MAX_SKILLS} skills.
+                            </p>
+                        ) : (
+                            <SkillAutocomplete
+                                value={skillInput}
+                                onChange={setSkillInput}
+                                onSelect={handleSkillSelect}
+                                onCustomSubmit={handleCustomSkill}
+                                clearOnSelect
+                                placeholder="e.g. Piano, Tennis, Maths..."
+                                id="apply-skill"
+                                mode="coach"
+                                excludeIds={new Set(selectedSkills.map(s => s.id))}
+                                excludeNames={new Set(selectedSkills.map(s => s.name.toLowerCase()))}
+                            />
+                        )}
                     </div>
 
                     {/* Headline */}

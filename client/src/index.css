@@ -2627,6 +2627,13 @@ select.form-input {
   line-height: 1.5;
 }
 
+.form-helper {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
 /* Character count */
 .form-char-count {
   display: block;

@@ -393,8 +393,8 @@ export default function ProfileSettings() {
     const handleSkillAutocompleteSelect = (s) => {
         if (!s.id) return;
         const canonicalName = s.resolvedName || s.name;
-        if (selectedSkills.length >= 10) {
-            showToast('Maximum 10 skills allowed.', 'info');
+        if (selectedSkills.length >= 5) {
+            showToast('Maximum 5 skills allowed.', 'info');
             return;
         }
         if (selectedSkills.some(sk => sk.id === s.id)) {
