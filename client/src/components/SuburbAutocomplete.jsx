@@ -83,8 +83,8 @@ export default function SuburbAutocomplete({ value, onChange, placeholder, id })
                         const el = e.target;
                         setTimeout(() => {
                             const filterBar = el.closest('.search-filters');
-                            if (filterBar && filterBar.getBoundingClientRect().top > 5) {
-                                filterBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            if (filterBar) {
+                                window.scrollTo({ top: filterBar.offsetTop, behavior: 'smooth' });
                             }
                         }, 300);
                     }
