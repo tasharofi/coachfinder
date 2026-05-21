@@ -77,7 +77,12 @@ export default function SuburbAutocomplete({ value, onChange, placeholder, id })
                 placeholder={placeholder || 'Start typing a suburb...'}
                 value={query}
                 onChange={handleInputChange}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                onFocus={(e) => {
+                    if (suggestions.length > 0) setShowSuggestions(true);
+                    if (window.innerWidth <= 768) {
+                        setTimeout(() => e.target.closest('.suburb-autocomplete')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+                    }
+                }}
                 autoComplete="off"
             />
             {showSuggestions && suggestions.length > 0 && (

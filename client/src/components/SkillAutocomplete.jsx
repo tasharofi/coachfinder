@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { searchSkills } from '../services/api';
 
 export default function SkillAutocomplete({ value, onChange, onSelect, onCustomSubmit, placeholder, id, className, clearOnSelect, allowCreate = true, excludeIds, excludeNames, mode }) {
@@ -148,7 +148,13 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                 placeholder={placeholder || 'What do you want to learn?'}
                 value={query}
                 onChange={handleInputChange}
-                onFocus={() => (suggestions.length > 0 || query.trim().length >= 2) && setShowSuggestions(true)}
+                onFocus={(e) => {
+                    if (suggestions.length > 0 || query.trim().length >= 2) setShowSuggestions(true);
+                    // On mobile, scroll the input to the top so dropdown is visible above keyboard
+                    if (window.innerWidth <= 768) {
+                        setTimeout(() => e.target.closest('.skill-autocomplete')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+                    }
+                }}
                 onKeyDown={handleKeyDown}
                 autoComplete="off"
             />
