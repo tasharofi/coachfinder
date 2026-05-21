@@ -150,9 +150,14 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                 onChange={handleInputChange}
                 onFocus={(e) => {
                     if (suggestions.length > 0 || query.trim().length >= 2) setShowSuggestions(true);
-                    // On mobile, scroll the input to the top so dropdown is visible above keyboard
+                    // On mobile, scroll the filter bar to the top so dropdown is visible above keyboard
                     if (window.innerWidth <= 768) {
-                        setTimeout(() => e.target.closest('.skill-autocomplete')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 300);
+                        setTimeout(() => {
+                            const filterBar = e.target.closest('.search-filters');
+                            if (filterBar && filterBar.getBoundingClientRect().top > 5) {
+                                filterBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        }, 300);
                     }
                 }}
                 onKeyDown={handleKeyDown}
