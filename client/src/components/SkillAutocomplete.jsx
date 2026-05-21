@@ -152,8 +152,9 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                     if (suggestions.length > 0 || query.trim().length >= 2) setShowSuggestions(true);
                     // On mobile, scroll the filter bar to the top so dropdown is visible above keyboard
                     if (window.innerWidth <= 768) {
+                        const el = e.target;
                         setTimeout(() => {
-                            const filterBar = e.target.closest('.search-filters');
+                            const filterBar = el.closest('.search-filters');
                             if (filterBar && filterBar.getBoundingClientRect().top > 5) {
                                 filterBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
                             }

@@ -80,8 +80,9 @@ export default function SuburbAutocomplete({ value, onChange, placeholder, id })
                 onFocus={(e) => {
                     if (suggestions.length > 0) setShowSuggestions(true);
                     if (window.innerWidth <= 768) {
+                        const el = e.target;
                         setTimeout(() => {
-                            const filterBar = e.target.closest('.search-filters');
+                            const filterBar = el.closest('.search-filters');
                             if (filterBar && filterBar.getBoundingClientRect().top > 5) {
                                 filterBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
                             }
