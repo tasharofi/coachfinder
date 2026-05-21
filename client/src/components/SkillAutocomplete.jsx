@@ -148,16 +148,11 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                 placeholder={placeholder || 'What do you want to learn?'}
                 value={query}
                 onChange={handleInputChange}
-                onFocus={(e) => {
+                onFocus={() => {
                     if (suggestions.length > 0 || query.trim().length >= 2) setShowSuggestions(true);
                     if (window.innerWidth <= 768) {
-                        const el = e.target;
-                        setTimeout(() => {
-                            const filterBar = el.closest('.search-filters');
-                            if (filterBar) {
-                                window.scrollTo({ top: filterBar.offsetTop, behavior: 'smooth' });
-                            }
-                        }, 300);
+                        window.scrollTo(0, 0);
+                        setTimeout(() => window.scrollTo(0, 0), 400);
                     }
                 }}
                 onKeyDown={handleKeyDown}
