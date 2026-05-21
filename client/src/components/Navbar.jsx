@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
-    const { user, logout, isAdmin, isCoach, coachStatus } = useAuth();
+    const { user, loading, logout, isAdmin, isCoach, coachStatus } = useAuth();
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -19,7 +19,7 @@ export default function Navbar() {
                 <Link to="/" className="nav-logo">CoachFinder</Link>
 
                 <div className="nav-actions">
-                    {user ? (
+                    {loading ? null : user ? (
                         <>
                             {isAdmin && (
                                 <Link to="/admin" className="btn btn-sm" style={{ color: 'var(--color-text-secondary)' }}>Admin</Link>
@@ -45,7 +45,7 @@ export default function Navbar() {
             </div>
 
             <div className={`nav-mobile-menu ${menuOpen ? 'open' : ''}`}>
-                {user ? (
+                {loading ? null : user ? (
                     <>
                         {isAdmin && (
                             <Link to="/admin" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Admin Panel</Link>
@@ -65,3 +65,4 @@ export default function Navbar() {
         </nav>
     );
 }
+
