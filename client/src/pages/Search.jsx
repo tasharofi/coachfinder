@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { searchCoaches } from '../services/api';
 import { VerifiedCoachBadge, EmailVerifiedBadge } from '../components/VerifiedBadge';
@@ -39,6 +39,7 @@ export default function Search() {
     const [availability, setAvailability] = useState(searchParams.get('availability') || '');
     const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'recommended');
     const [mobileShowDetail, setMobileShowDetail] = useState(false);
+    const scrollPosRef = useRef(0);
 
     const fetchCoaches = useCallback(async (filters) => {
         setLoading(true);
@@ -93,8 +94,10 @@ export default function Search() {
     }, [coaches]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const selectCoach = (coach) => {
+        scrollPosRef.current = window.scrollY;
         setSelectedCoach(coach);
         setMobileShowDetail(true);
+        window.scrollTo(0, 0);
         const params = new URLSearchParams(searchParams);
         params.set('coach', coach.user?.slug || coach.id);
         setSearchParams(params, { replace: true });
@@ -105,6 +108,9 @@ export default function Search() {
         const params = new URLSearchParams(searchParams);
         params.delete('coach');
         setSearchParams(params, { replace: true });
+        requestAnimationFrame(() => {
+            window.scrollTo(0, scrollPosRef.current);
+        });
     };
 
     return (
