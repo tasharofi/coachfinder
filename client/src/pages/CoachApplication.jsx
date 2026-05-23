@@ -311,7 +311,7 @@ export default function CoachApplication() {
                     <div className="form-row">
                         <div className="form-group" style={{ flex: 1 }}>
                             <label className="form-label" htmlFor="apply-rate">Hourly rate ($) *</label>
-                            <input id="apply-rate" className="form-input" type="number" min="1" step="5" value={form.hourlyRate} onChange={(e) => setForm({ ...form, hourlyRate: e.target.value })} required />
+                            <input id="apply-rate" className="form-input" type="number" min="1" step="1" value={form.hourlyRate} onChange={(e) => setForm({ ...form, hourlyRate: e.target.value })} required />
                         </div>
                         <div className="form-group" style={{ flex: 1 }}>
                             <label className="form-label" htmlFor="apply-exp">Years of experience</label>

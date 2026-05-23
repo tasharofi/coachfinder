@@ -744,7 +744,7 @@ export default function ProfileSettings() {
                                 <div className="form-row">
                                     <div className="form-group" style={{ flex: 1 }}>
                                         <label className="form-label" htmlFor="edit-rate">Hourly Rate ($)</label>
-                                        <input id="edit-rate" className="form-input" type="number" min="1" step="5"
+                                        <input id="edit-rate" className="form-input" type="number" min="1" step="1"
                                             value={coachForm.hourlyRate}
                                             onChange={(e) => setCoachForm({ ...coachForm, hourlyRate: e.target.value })} />
                                     </div>
