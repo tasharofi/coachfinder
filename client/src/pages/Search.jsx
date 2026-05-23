@@ -110,7 +110,7 @@ export default function Search() {
     return (
         <div>
             {/* Filters Bar */}
-            <div className="search-filters">
+            <div className={`search-filters ${mobileShowDetail ? 'mobile-hidden' : ''}`}>
                 <form className="search-filters-row" onSubmit={handleSearch}>
                     <div className="filter-cell filter-cell-grow">
                         <SkillAutocomplete

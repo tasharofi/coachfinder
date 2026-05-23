@@ -2384,6 +2384,10 @@ select.form-input {
     display: none;
   }
 
+  .search-filters.mobile-hidden {
+    display: none;
+  }
+
   .mobile-back-btn {
     display: inline-flex;
   }
