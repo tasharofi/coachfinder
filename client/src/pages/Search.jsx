@@ -84,14 +84,24 @@ export default function Search() {
         fetchCoaches({ skill, suburb, sessionMode, priceRange, availability, sortBy });
     };
 
-    // Restore selected coach from URL on initial load
+    // Sync mobileShowDetail with URL — handles browser back button
     useEffect(() => {
         const coachSlug = searchParams.get('coach');
-        if (coachSlug && coaches.length && !selectedCoach) {
-            const match = coaches.find(c => c.user?.slug === coachSlug);
-            if (match) { setSelectedCoach(match); setMobileShowDetail(true); }
+        if (coachSlug && coaches.length) {
+            const match = coaches.find(c => c.user?.slug === coachSlug || c.id === coachSlug);
+            if (match) {
+                setSelectedCoach(match);
+                setMobileShowDetail(true);
+            }
+        } else if (!coachSlug && mobileShowDetail) {
+            // Coach param removed (e.g. browser back) — return to list
+            setMobileShowDetail(false);
+            setSelectedCoach(null);
+            requestAnimationFrame(() => {
+                window.scrollTo(0, scrollPosRef.current);
+            });
         }
-    }, [coaches]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [searchParams, coaches]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const selectCoach = (coach) => {
         scrollPosRef.current = window.scrollY;
@@ -100,17 +110,12 @@ export default function Search() {
         window.scrollTo(0, 0);
         const params = new URLSearchParams(searchParams);
         params.set('coach', coach.user?.slug || coach.id);
-        setSearchParams(params, { replace: true });
+        setSearchParams(params);
     };
 
     const handleBackToList = () => {
-        setMobileShowDetail(false);
-        const params = new URLSearchParams(searchParams);
-        params.delete('coach');
-        setSearchParams(params, { replace: true });
-        requestAnimationFrame(() => {
-            window.scrollTo(0, scrollPosRef.current);
-        });
+        // Navigate back in history so device back button and this button behave the same
+        navigate(-1);
     };
 
     return (
