@@ -22,24 +22,32 @@ router.get('/', async (req, res) => {
             user: { suspended: false },
         };
 
-        // Skill filter — match canonical names, aliases, then fallback to bio/headline
-        let skillFallbackText = null;
+        // Skill filter — smart multi-word search
+        // Split query into words, match each against skills/aliases, and fallback to headline/bio
+        let skillFallbackWords = null;
         if (skill) {
-            // Find matching skill IDs: canonical OR proposed-but-used-by-approved-coaches
+            const queryWords = skill.trim().toLowerCase().split(/\s+/).filter(w => w.length >= 2);
+
+            // Try matching the full query AND individual words against skill names/aliases
+            const allSearchTerms = [skill, ...queryWords];
+            const uniqueTerms = [...new Set(allSearchTerms.map(t => t.toLowerCase()))];
+
             const matchedByName = await prisma.skill.findMany({
                 where: {
                     enabled: true,
-                    name: { contains: skill },
-                    OR: [
-                        { isProposed: false },
-                        { isProposed: true, coaches: { some: { coachProfile: { status: 'APPROVED' } } } },
-                    ],
+                    OR: uniqueTerms.map(term => ({ name: { contains: term } })),
+                    AND: {
+                        OR: [
+                            { isProposed: false },
+                            { isProposed: true, coaches: { some: { coachProfile: { status: 'APPROVED' } } } },
+                        ],
+                    },
                 },
-                select: { id: true },
+                select: { id: true, name: true },
             });
             const matchedByAlias = await prisma.skillAlias.findMany({
                 where: {
-                    alias: { contains: skill },
+                    OR: uniqueTerms.map(term => ({ alias: { contains: term } })),
                     skill: {
                         enabled: true,
                         OR: [
@@ -56,14 +64,26 @@ router.get('/', async (req, res) => {
             ])];
 
             if (matchedIds.length > 0) {
+                // Use skill-based matching but also keep fallback words
+                // for additional text filtering (e.g. "tutor" in headline)
                 where.skills = {
                     some: {
                         skillId: { in: matchedIds },
                     },
                 };
+                // If multi-word query, also check remaining non-skill words against text
+                if (queryWords.length > 1) {
+                    const matchedSkillNames = matchedByName.map(s => s.name.toLowerCase());
+                    const nonSkillWords = queryWords.filter(w =>
+                        !matchedSkillNames.some(name => name.includes(w))
+                    );
+                    if (nonSkillWords.length > 0) {
+                        skillFallbackWords = nonSkillWords;
+                    }
+                }
             } else {
-                // Fallback: search headline and bio text
-                skillFallbackText = skill;
+                // No skill match at all — fallback to text search with ALL words
+                skillFallbackWords = queryWords;
             }
         }
 
@@ -131,13 +151,14 @@ router.get('/', async (req, res) => {
         // Post-filter by availability if requested
         let filtered = coaches;
 
-        // Apply headline/bio fallback filter if no structured skill match was found
-        if (skillFallbackText) {
-            const lowerKeyword = skillFallbackText.toLowerCase();
+        // Apply word-level text filter: ALL words must appear somewhere in skills+headline+bio
+        if (skillFallbackWords && skillFallbackWords.length > 0) {
             filtered = filtered.filter(coach => {
                 const headline = (coach.headline || '').toLowerCase();
                 const bio = (coach.bio || '').toLowerCase();
-                return headline.includes(lowerKeyword) || bio.includes(lowerKeyword);
+                const skillNames = (coach.skills || []).map(cs => (cs.skill?.name || '').toLowerCase()).join(' ');
+                const searchable = `${skillNames} ${headline} ${bio}`;
+                return skillFallbackWords.every(word => searchable.includes(word));
             });
         }
 
