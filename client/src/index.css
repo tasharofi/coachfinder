@@ -2413,6 +2413,12 @@ select.form-input {
     flex-direction: column;
   }
 
+  .search-filters {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+
   .search-filters-row {
     flex-wrap: wrap;
   }
