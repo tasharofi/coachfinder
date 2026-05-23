@@ -6,7 +6,7 @@ import { VerifiedCoachBadge, EmailVerifiedBadge } from '../components/VerifiedBa
 import { formatAvailability } from '../components/AvailabilityPicker';
 import ContactRequestModal from '../components/ContactRequestModal';
 import ReportModal from '../components/ReportModal';
-import { MapPin, DollarSign, MonitorSmartphone, Award } from 'lucide-react';
+import { MapPin, BadgeDollarSign, MonitorSmartphone, Award } from 'lucide-react';
 
 const SESSION_MODE_LABELS = { IN_PERSON: 'In Person', ONLINE: 'Online', BOTH: 'In Person & Online' };
 
@@ -76,25 +76,25 @@ export default function CoachProfile() {
                 <div className="profile-stats">
                     {cp?.suburb && (
                         <div className="profile-stat">
-                            <span className="profile-stat-label"><MapPin size={16} /> Location</span>
+                            <span className="profile-stat-label"><MapPin size={16} strokeWidth={1.75} /> Location</span>
                             <span className="profile-stat-value">{cp.suburb}, {cp.state}</span>
                         </div>
                     )}
                     {cp?.hourlyRate > 0 && (
                         <div className="profile-stat">
-                            <span className="profile-stat-label"><DollarSign size={16} /> Rate</span>
+                            <span className="profile-stat-label"><BadgeDollarSign size={16} strokeWidth={1.75} /> Rate</span>
                             <span className="profile-stat-value">${cp.hourlyRate}/hr</span>
                         </div>
                     )}
                     {cp?.sessionMode && (
                         <div className="profile-stat">
-                            <span className="profile-stat-label"><MonitorSmartphone size={16} /> Format</span>
+                            <span className="profile-stat-label"><MonitorSmartphone size={16} strokeWidth={1.75} /> Format</span>
                             <span className="profile-stat-value">{SESSION_MODE_LABELS[cp.sessionMode]}</span>
                         </div>
                     )}
                     {cp?.yearsExp > 0 && (
                         <div className="profile-stat">
-                            <span className="profile-stat-label"><Award size={16} /> Experience</span>
+                            <span className="profile-stat-label"><Award size={16} strokeWidth={1.75} /> Experience</span>
                             <span className="profile-stat-value">{cp.yearsExp} years</span>
                         </div>
                     )}

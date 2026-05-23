@@ -6,7 +6,7 @@ import { formatAvailability } from '../components/AvailabilityPicker';
 import ContactRequestModal from '../components/ContactRequestModal';
 import SuburbAutocomplete from '../components/SuburbAutocomplete';
 import SkillAutocomplete from '../components/SkillAutocomplete';
-import { MapPin, DollarSign, MonitorSmartphone, Award } from 'lucide-react';
+import { MapPin, BadgeDollarSign, MonitorSmartphone, Award } from 'lucide-react';
 
 const SESSION_MODE_LABELS = { IN_PERSON: 'In Person', ONLINE: 'Online', BOTH: 'In Person & Online' };
 const PRICE_RANGES = [
@@ -197,10 +197,10 @@ export default function Search() {
                                     </div>
                                     {coach.headline && <div className="coach-card-headline">{coach.headline}</div>}
                                     <div className="coach-card-meta">
-                                        {coach.suburb && <span><MapPin size={14} /> {coach.suburb}, {coach.state}</span>}
-                                        {coach.hourlyRate > 0 && <span><DollarSign size={14} />${coach.hourlyRate}/hr</span>}
-                                        {coach.sessionMode && <span><MonitorSmartphone size={14} /> {SESSION_MODE_LABELS[coach.sessionMode] || coach.sessionMode}</span>}
-                                        {coach.yearsExp > 0 && <span><Award size={14} /> {coach.yearsExp} yr{coach.yearsExp !== 1 ? 's' : ''} exp</span>}
+                                        {coach.suburb && <span><MapPin size={16} strokeWidth={1.75} /> {coach.suburb}, {coach.state}</span>}
+                                        {coach.hourlyRate > 0 && <span><BadgeDollarSign size={16} strokeWidth={1.75} /> ${coach.hourlyRate}/hr</span>}
+                                        {coach.sessionMode && <span><MonitorSmartphone size={16} strokeWidth={1.75} /> {SESSION_MODE_LABELS[coach.sessionMode] || coach.sessionMode}</span>}
+                                        {coach.yearsExp > 0 && <span><Award size={16} strokeWidth={1.75} /> {coach.yearsExp} yr{coach.yearsExp !== 1 ? 's' : ''} exp</span>}
                                     </div>
                                     {coach.skills?.length > 0 && (
                                         <div className="coach-card-skills">
@@ -256,10 +256,10 @@ function CoachDetailPanel({ coach, onBack, onContact }) {
             {coach.headline && <p className="detail-headline">{coach.headline}</p>}
 
             <div className="detail-meta">
-                {coach.suburb && <span className="detail-meta-item"><MapPin size={16} /> {coach.suburb}, {coach.state} {coach.postcode}</span>}
-                {coach.hourlyRate > 0 && <span className="detail-meta-item"><DollarSign size={16} />${coach.hourlyRate}/hr</span>}
-                {coach.sessionMode && <span className="detail-meta-item"><MonitorSmartphone size={16} /> {SESSION_MODE_LABELS[coach.sessionMode]}</span>}
-                {coach.yearsExp > 0 && <span className="detail-meta-item"><Award size={16} /> {coach.yearsExp} years experience</span>}
+                {coach.suburb && <span className="detail-meta-item"><MapPin size={16} strokeWidth={1.75} /> {coach.suburb}, {coach.state} {coach.postcode}</span>}
+                {coach.hourlyRate > 0 && <span className="detail-meta-item"><BadgeDollarSign size={16} strokeWidth={1.75} /> ${coach.hourlyRate}/hr</span>}
+                {coach.sessionMode && <span className="detail-meta-item"><MonitorSmartphone size={16} strokeWidth={1.75} /> {SESSION_MODE_LABELS[coach.sessionMode]}</span>}
+                {coach.yearsExp > 0 && <span className="detail-meta-item"><Award size={16} strokeWidth={1.75} /> {coach.yearsExp} years experience</span>}
             </div>
 
             {coach.skills?.length > 0 && (

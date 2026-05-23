@@ -942,20 +942,21 @@ select.form-input {
 .coach-card-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: 20px;
   font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+  color: #64748B;
   margin-bottom: var(--space-2);
 }
 
 .coach-card-meta span {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 6px;
 }
 
 .coach-card-meta svg {
   flex-shrink: 0;
+  color: #64748B;
 }
 
 .coach-card-skills {
@@ -1033,13 +1034,14 @@ select.form-input {
 .detail-meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
+  color: #64748B;
 }
 
 .detail-meta-item svg {
   flex-shrink: 0;
+  color: #64748B;
 }
 
 .detail-section {
@@ -1135,14 +1137,15 @@ select.form-input {
 .profile-stat-label {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   font-size: var(--font-size-xs);
-  color: var(--color-text-muted);
+  color: #64748B;
   margin-bottom: var(--space-1);
 }
 
 .profile-stat-label svg {
   flex-shrink: 0;
+  color: #64748B;
 }
 
 .profile-stat-value {
