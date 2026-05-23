@@ -155,7 +155,7 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                     if (window.innerWidth <= 768) {
                         const el = e.target;
                         const doScroll = () => {
-                            const container = el.closest('.hero-search') || el.closest('.search-filters');
+                            const container = el.closest('.hero-search');
                             if (container) {
                                 const top = container.getBoundingClientRect().top + window.pageYOffset - 8;
                                 window.scrollTo({ top, behavior: 'smooth' });
