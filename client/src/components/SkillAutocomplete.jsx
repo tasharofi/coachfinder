@@ -65,12 +65,14 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                 const raw = data.suggestions || [];
                 setRawResultCount(raw.length);
 
-                // Filter out suggestions whose canonical skill ID is already selected
-                const filtered = excludeSet.size > 0
-                    ? raw.filter(s => !excludeSet.has(s.id))
-                    : raw;
+                // Mark suggestions whose canonical skill ID is already selected
+                // (shown greyed-out in dropdown rather than hidden)
+                const marked = raw.map(s => ({
+                    ...s,
+                    alreadySelected: excludeSet.size > 0 && excludeSet.has(s.id),
+                }));
 
-                setSuggestions(filtered);
+                setSuggestions(marked);
                 setShowSuggestions(true);
             } catch {
                 setSuggestions([]);
@@ -133,8 +135,8 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
     // - typed text doesn't exactly match an already-selected skill name
     const queryTrimmed = query.trim();
     const queryLower = queryTrimmed.toLowerCase();
-    const exactMatchVisible = suggestions.some(s => s.isCanonical && s.name.toLowerCase() === queryLower);
-    const allResultsFiltered = rawResultCount > 0 && suggestions.length === 0;
+    const selectableSuggestions = suggestions.filter(s => !s.alreadySelected);
+    const exactMatchVisible = selectableSuggestions.some(s => s.isCanonical && s.name.toLowerCase() === queryLower);
     const excludeNameSet = excludeNames instanceof Set ? excludeNames : new Set((excludeNames || []).map(n => n.toLowerCase()));
     const exactMatchAlreadySelected = excludeNameSet.has(queryLower);
     const showCreateNew = allowCreate && queryTrimmed.length >= 2 && !exactMatchVisible && !exactMatchAlreadySelected;
@@ -171,18 +173,22 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                     {suggestions.map((s, i) => (
                         <button
                             key={`${s.id}-${s.label}`}
-                            className={`skill-suggestion ${i === activeIndex ? 'active' : ''}`}
+                            className={`skill-suggestion ${i === activeIndex ? 'active' : ''} ${s.alreadySelected ? 'skill-suggestion-disabled' : ''}`}
                             type="button"
-                            onClick={() => handleSelect(s)}
+                            onClick={() => !s.alreadySelected && handleSelect(s)}
                             onMouseEnter={() => setActiveIndex(i)}
+                            disabled={s.alreadySelected}
                         >
                             <div className="skill-suggestion-main">
                                 <span className="skill-suggestion-name">{s.label || s.name}</span>
-                                {mode === 'coach' && s.parentGroup && (
+                                {s.alreadySelected && (
+                                    <span className="skill-suggestion-added">Added</span>
+                                )}
+                                {mode === 'coach' && s.parentGroup && !s.alreadySelected && (
                                     <span className="skill-suggestion-group">{s.parentGroup}</span>
                                 )}
                             </div>
-                            {mode === 'coach' && s.matchedAliases && s.matchedAliases.length > 0 && (
+                            {mode === 'coach' && s.matchedAliases && s.matchedAliases.length > 0 && !s.alreadySelected && (
                                 <span className="skill-suggestion-aliases">Also matches: {s.matchedAliases.join(', ')}</span>
                             )}
                         </button>
@@ -204,12 +210,6 @@ export default function SkillAutocomplete({ value, onChange, onSelect, onCustomS
                             <span className="skill-suggestion-create-icon">+</span>
                             <span>Add "<strong>{query.trim()}</strong>" as new skill</span>
                         </button>
-                    )}
-                    {/* Show hint when all results were filtered out */}
-                    {allResultsFiltered && (
-                        <div className="skill-suggestion-info">
-                            Already in your skills
-                        </div>
                     )}
                 </div>
             )}

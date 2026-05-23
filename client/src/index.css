@@ -1730,6 +1730,21 @@ select.form-input {
   text-align: center;
 }
 
+.skill-suggestion-disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+
+.skill-suggestion-added {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  background: var(--color-bg-secondary);
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+
 /* Main row layout for skill suggestions */
 .skill-suggestion-main {
   display: flex;
