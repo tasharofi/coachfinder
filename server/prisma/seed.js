@@ -112,9 +112,9 @@ async function main() {
 
     // Create admin user (original)
     const admin = await prisma.user.upsert({
-        where: { email: 'admin@coachfinder.com' },
+        where: { email: 'admin@skillnextdoor.com' },
         create: {
-            email: 'admin@coachfinder.com',
+            email: 'admin@skillnextdoor.com',
             password: adminPassword,
             name: 'Admin',
             slug: 'admin',
@@ -127,14 +127,14 @@ async function main() {
     });
     console.log('Created admin user:', admin.email);
 
-    // Create CoachFinder admin user (receives email notifications)
+    // Create Skill Next Door admin user (receives email notifications)
     const cfAdmin = await prisma.user.upsert({
         where: { email: 'coachfindrapp@gmail.com' },
         create: {
             email: 'coachfindrapp@gmail.com',
             password: adminPassword,
-            name: 'CoachFinder Admin',
-            slug: 'coachfinder-admin',
+            name: 'Skill Next Door Admin',
+            slug: 'skillnextdoor-admin',
             isLearner: false,
             isCoach: false,
             isAdmin: true,
@@ -392,7 +392,7 @@ async function main() {
     console.log(`Created ${learners.length} learners`);
 
     console.log('\nSeeding complete!');
-    console.log('Admin login: admin@coachfinder.com / admin123');
+    console.log('Admin login: admin@skillnextdoor.com / admin123');
     console.log('Learner login: alex.learner@example.com / password123');
     console.log('Coach login: sarah.tennis@example.com / password123');
 }

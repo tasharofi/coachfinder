@@ -5,7 +5,7 @@ const RESEND_API_URL = 'https://api.resend.com/emails';
 
 async function sendEmail({ to, subject, html, text }) {
     const apiKey = process.env.RESEND_API_KEY;
-    const from = process.env.EMAIL_FROM || 'CoachFinder <onboarding@resend.dev>';
+    const from = process.env.EMAIL_FROM || 'Skill Next Door <onboarding@resend.dev>';
 
     if (!apiKey) {
         console.log(`[Email] Would send to: ${to}`);
@@ -44,29 +44,29 @@ async function sendEmail({ to, subject, html, text }) {
 async function sendCoachApprovedEmail(coachEmail, coachName) {
     return sendEmail({
         to: coachEmail,
-        subject: 'Your CoachFinder profile is now live!',
+        subject: 'Your Skill Next Door profile is now live!',
         html: `
             <h2>Congratulations, ${coachName}!</h2>
             <p>Your coach profile has been reviewed and approved by our team.</p>
-            <p>Your profile is now visible to learners searching on CoachFinder.</p>
+            <p>Your profile is now visible to learners searching on Skill Next Door.</p>
             <p>You'll receive an email notification when a learner sends you a booking request.</p>
             <br>
-            <p>— The CoachFinder Team</p>
+            <p>— The Skill Next Door Team</p>
         `,
-        text: `Congratulations, ${coachName}! Your coach profile has been approved and is now live on CoachFinder.`,
+        text: `Congratulations, ${coachName}! Your coach profile has been approved and is now live on Skill Next Door.`,
     });
 }
 
 async function sendCoachRejectedEmail(coachEmail, coachName) {
     return sendEmail({
         to: coachEmail,
-        subject: 'CoachFinder profile update',
+        subject: 'Skill Next Door profile update',
         html: `
             <h2>Hi ${coachName},</h2>
             <p>We've reviewed your coach profile application and unfortunately we're unable to approve it at this time.</p>
             <p>If you believe this was in error, please contact our support team.</p>
             <br>
-            <p>— The CoachFinder Team</p>
+            <p>— The Skill Next Door Team</p>
         `,
         text: `Hi ${coachName}, we've reviewed your coach profile and are unable to approve it at this time.`,
     });
@@ -82,7 +82,7 @@ async function sendContactRequestToCoach(coachEmail, coachName, requestData) {
         subject: `New booking request from ${learnerName}`,
         html: `
             <h2>Hi ${coachName},</h2>
-            <p>You have a new booking request on CoachFinder!</p>
+            <p>You have a new booking request on Skill Next Door!</p>
             <table style="border-collapse: collapse; width: 100%; max-width: 500px;">
                 <tr><td style="padding: 8px; font-weight: bold;">From:</td><td style="padding: 8px;">${learnerName}</td></tr>
                 <tr><td style="padding: 8px; font-weight: bold;">Email:</td><td style="padding: 8px;">${learnerEmail}</td></tr>
@@ -95,7 +95,7 @@ async function sendContactRequestToCoach(coachEmail, coachName, requestData) {
             <p>${message || 'No message provided.'}</p>
             <br>
             <p>Please respond to the learner directly at <a href="mailto:${learnerEmail}">${learnerEmail}</a>.</p>
-            <p>— The CoachFinder Team</p>
+            <p>— The Skill Next Door Team</p>
         `,
         text: `New booking request from ${learnerName} (${learnerEmail}). Message: ${message}`,
     });
@@ -110,7 +110,7 @@ async function sendContactConfirmationToLearner(learnerEmail, learnerName, coach
             <p>Your booking request to <strong>${coachName}</strong> has been sent successfully!</p>
             <p>The coach will review your request and get back to you via email.</p>
             <br>
-            <p>— The CoachFinder Team</p>
+            <p>— The Skill Next Door Team</p>
         `,
         text: `Hi ${learnerName}, your booking request to ${coachName} has been sent. The coach will respond via email.`,
     });
@@ -135,10 +135,10 @@ async function sendNewApplicationNotification(coachName, coachEmail) {
 async function sendVerificationEmail(userEmail, userName, verificationLink) {
     return sendEmail({
         to: userEmail,
-        subject: 'Verify your CoachFinder email',
+        subject: 'Verify your Skill Next Door email',
         html: `
             <h2>Hi ${userName},</h2>
-            <p>Thanks for signing up to CoachFinder! Please verify your email address by clicking the button below.</p>
+            <p>Thanks for signing up to Skill Next Door! Please verify your email address by clicking the button below.</p>
             <p style="margin: 24px 0;">
                 <a href="${verificationLink}" style="background-color: #6366f1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600;">Verify Email</a>
             </p>
@@ -146,7 +146,7 @@ async function sendVerificationEmail(userEmail, userName, verificationLink) {
             <p style="word-break: break-all; color: #6366f1;">${verificationLink}</p>
             <p>This link expires in 24 hours.</p>
             <br>
-            <p>— The CoachFinder Team</p>
+            <p>— The Skill Next Door Team</p>
         `,
         text: `Hi ${userName}, verify your email by visiting: ${verificationLink} — this link expires in 24 hours.`,
     });

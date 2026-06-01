@@ -58,7 +58,7 @@ export default function Register() {
         return (
             <div className="auth-page">
                 <div className="auth-card" style={{ maxWidth: '520px' }}>
-                    <h1 className="auth-title">Join CoachFinder</h1>
+                    <h1 className="auth-title">Join Skill Next Door</h1>
                     <p className="auth-subtitle">How do you want to get started?</p>
 
                     <div className="register-paths">

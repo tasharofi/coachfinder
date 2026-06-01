@@ -23,9 +23,9 @@ export default function Landing() {
             {/* Hero */}
             <section className="hero">
                 <div className="hero-inner">
-                    <h1 className="hero-title">Learn from trusted<br />local coaches</h1>
+                    <h1 className="hero-title">Learn from skilled people<br />next door</h1>
                     <p className="hero-subtitle">
-                        Search by skill and suburb to find verified local coaches and experienced everyday experts for tennis, piano, maths, coding and more.
+                        Find trusted coaches and everyday experts in your area — for tennis, piano, maths, coding and more. Search by skill and suburb.
                     </p>
 
                     <form className="hero-search" onSubmit={handleSearch} id="hero-search-form">
@@ -51,7 +51,7 @@ export default function Landing() {
                         </button>
                     </form>
                     <p className="hero-search-hint">
-                        Search by skill and suburb to find coaches near you.
+                        Search by skill and suburb to get started.
                     </p>
                 </div>
             </section>
@@ -68,9 +68,9 @@ export default function Landing() {
                 </div>
             </section>
 
-            {/* Why learn through CoachFinder? */}
+            {/* Why Skill Next Door? */}
             <section className="why-section">
-                <h2 className="section-title">Why learn through CoachFinder?</h2>
+                <h2 className="section-title">Why Skill Next Door?</h2>
                 <div className="why-grid">
                     <div className="why-card">
                         <div className="why-card-icon">
@@ -128,7 +128,7 @@ export default function Landing() {
                     <div className="how-step">
                         <div className="how-step-number">3</div>
                         <h3>Send a request</h3>
-                        <p>Contact the coach through CoachFinder and organise the session directly.</p>
+                        <p>Contact the coach through Skill Next Door and organise the session directly.</p>
                     </div>
                 </div>
             </section>

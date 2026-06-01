@@ -24,7 +24,7 @@ export default function BecomeCoach() {
                 <div className="btc-hero-inner">
                     <h1 className="btc-hero-title">Good at something?<br />Start coaching it.</h1>
                     <p className="btc-hero-subtitle">
-                        Whether you play tennis, teach piano, code, cook or speak another language, CoachFinder helps you create a profile, get discovered locally, and receive coaching requests.
+                        Whether you play tennis, teach piano, code, cook or speak another language, Skill Next Door helps you create a profile, get discovered locally, and receive coaching requests.
                     </p>
                     <button className="btn btn-accent btn-lg btc-hero-btn" onClick={handleCTA} id="btc-hero-cta">
                         Start Coaching →
@@ -130,7 +130,7 @@ export default function BecomeCoach() {
                         </div>
                         <div>
                             <span className="btc-trust-badge">Your contact details stay private</span>
-                            <p>Learners send requests through CoachFinder, so your personal email is not shown publicly.</p>
+                            <p>Learners send requests through Skill Next Door, so your personal email is not shown publicly.</p>
                         </div>
                     </div>
                 </div>

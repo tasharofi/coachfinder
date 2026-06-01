@@ -10,7 +10,7 @@ const { sendVerificationEmail } = require('../utils/email');
 
 const router = express.Router();
 
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://coachfinder-indol.vercel.app';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://skillnextdoor.com';
 
 async function createAndSendVerification(userId, userEmail, userName) {
     // Delete any existing tokens for this user

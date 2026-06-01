@@ -1,5 +1,5 @@
 /**
- * Content moderation utility for CoachFinder.
+ * Content moderation utility for Skill Next Door.
  * Provides profanity filtering, spam detection, HTML injection prevention,
  * and field-level validation with character limits.
  */

@@ -1,5 +1,5 @@
 /**
- * AIService — Multi-provider AI wrapper for CoachFinder MVP.
+ * AIService — Multi-provider AI wrapper for Skill Next Door.
  *
  * Supported providers:
  *   - groq  (free tier, uses groq-sdk with Llama models)

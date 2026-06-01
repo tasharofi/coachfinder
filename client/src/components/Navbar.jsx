@@ -16,7 +16,7 @@ export default function Navbar() {
     return (
         <nav className="nav">
             <div className="nav-inner">
-                <Link to="/" className="nav-logo">CoachFinder</Link>
+                <Link to="/" className="nav-logo">Skill Next Door</Link>
 
                 <div className="nav-actions">
                     {loading ? null : user ? (

@@ -47,7 +47,7 @@ export default function Login() {
         <div className="auth-page">
             <div className="auth-card">
                 <h1 className="auth-title">Welcome back</h1>
-                <p className="auth-subtitle">Sign in to your CoachFinder account</p>
+                <p className="auth-subtitle">Sign in to your Skill Next Door account</p>
 
                 {error && <div className="alert alert-error">{error}</div>}
 

@@ -25,7 +25,7 @@ const allowedOrigins = [
     'http://localhost:3000',
 ];
 
-// Add FRONTEND_URL if configured (e.g. https://coachfinder-indol.vercel.app)
+// Add FRONTEND_URL if configured (e.g. https://skillnextdoor.com)
 if (process.env.FRONTEND_URL) {
     allowedOrigins.push(process.env.FRONTEND_URL);
 }
@@ -181,7 +181,7 @@ app.post('/api/test-email', async (req, res) => {
         const { sendEmail } = require('./utils/email');
         const result = await sendEmail({
             to: adminEmail,
-            subject: 'CoachFinder Test Email',
+            subject: 'Skill Next Door Test Email',
             html: '<h2>Test Email</h2><p>If you see this, SMTP is working! 🎉</p><p>New coach application from <strong>Kamran T</strong> (kamrant@gmail.com).</p>',
             text: 'Test email — SMTP is working. New coach application from Kamran T.',
         });
@@ -225,7 +225,7 @@ process.on('unhandledRejection', (err) => {
 
 // Bind to 0.0.0.0 explicitly — required for Railway/containerized environments
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`CoachFinder API running on port ${PORT} (0.0.0.0)`);
+    console.log(`Skill Next Door API running on port ${PORT} (0.0.0.0)`);
 }).on('error', (err) => {
     console.error('SERVER LISTEN ERROR:', err);
     process.exit(1);
