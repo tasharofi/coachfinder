@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skill Next Door — Colour Palette Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', -apple-system, sans-serif; background: #f5f5f5; color: #1a1a2e; }
+
+.page-header {
+  text-align: center;
+  padding: 48px 24px 32px;
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+}
+.page-header h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+.page-header p { color: #64748b; font-size: 15px; max-width: 560px; margin: 0 auto; }
+
+.palettes { max-width: 1300px; margin: 0 auto; padding: 40px 24px 80px; }
+
+.palette-section {
+  background: #fff;
+  border-radius: 16px;
+  margin-bottom: 40px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.palette-label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.palette-label h2 { font-size: 20px; font-weight: 700; }
+.palette-label .tag {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+}
+.palette-swatches {
+  display: flex;
+  gap: 12px;
+  padding: 20px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  flex-wrap: wrap;
+}
+.swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.swatch-color {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.swatch-name { font-size: 10px; color: #94a3b8; font-weight: 500; }
+.swatch-hex { font-size: 11px; font-weight: 600; color: #334155; }
+
+/* Mini mockup */
+.mockup {
+  padding: 32px;
+}
+.mockup-hero {
+  text-align: center;
+  padding: 48px 24px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+.mockup-hero h3 {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.mockup-hero p {
+  font-size: 14px;
+  margin-bottom: 20px;
+  max-width: 420px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.mockup-hero p { margin-bottom: 20px; }
+
+.btn-mock {
+  display: inline-block;
+  padding: 12px 28px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  margin: 0 6px;
+}
+.btn-mock-outline {
+  background: transparent;
+  border: 1.5px solid;
+  color: inherit;
+}
+
+.mockup-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.chip-mock {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.card-mock {
+  flex: 1;
+  min-width: 200px;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #e8e8e8;
+}
+.card-mock h4 { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.card-mock p { font-size: 12px; color: #64748b; line-height: 1.5; }
+
+.icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  font-size: 18px;
+}
+
+.badge-mock {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.nav-mock {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #e8e8e8;
+}
+.nav-mock-logo {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.nav-mock-links {
+  display: flex;
+  gap: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+}
+.nav-mock-cta {
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+}
+
+.palette-note {
+  padding: 16px 32px 24px;
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.6;
+  border-top: 1px solid #f0f0f0;
+}
+.palette-note strong { color: #334155; }
+
+@media (max-width: 700px) {
+  .mockup-row { flex-direction: column; }
+  .palette-swatches { justify-content: center; }
+  .mockup { padding: 16px; }
+  .mockup-hero { padding: 32px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>🎨 Colour Palette Options</h1>
+  <p>Four distinct palette proposals for Skill Next Door. Each one is shown with a mini mockup so you can see how it feels in context.</p>
+</div>
+
+<div class="palettes">
+
+<!-- ============================================ -->
+<!-- PALETTE 1: Indigo Night -->
+<!-- ============================================ -->
+<div class="palette-section">
+  <div class="palette-label">
+    <h2>1. Indigo Night</h2>
+    <span class="tag">Bold & Premium</span>
+  </div>
+  <div class="palette-swatches">
+    <div class="swatch"><div class="swatch-color" style="background:#4F46E5"></div><div class="swatch-name">Primary</div><div class="swatch-hex">#4F46E5</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#3730A3"></div><div class="swatch-name">Primary Hover</div><div class="swatch-hex">#3730A3</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#10B981"></div><div class="swatch-name">Accent</div><div class="swatch-hex">#10B981</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#059669"></div><div class="swatch-name">Accent Hover</div><div class="swatch-hex">#059669</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#EEF2FF"></div><div class="swatch-name">Light tint</div><div class="swatch-hex">#EEF2FF</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0F172A"></div><div class="swatch-name">Dark text</div><div class="swatch-hex">#0F172A</div></div>
+  </div>
+  <div class="mockup">
+    <div class="nav-mock">
+      <div class="nav-mock-logo" style="color:#4F46E5">Skill Next Door</div>
+      <div class="nav-mock-links"><span>Find a Coach</span><span>Become a Coach</span></div>
+      <button class="nav-mock-cta" style="background:#4F46E5">Sign In</button>
+    </div>
+    <div class="mockup-hero" style="background: linear-gradient(135deg, #EEF2FF, #E0E7FF);">
+      <h3 style="color:#0F172A">Learn from skilled people nearby</h3>
+      <p style="color:#475569">Find trusted local coaches and skilled people who can help you learn.</p>
+      <button class="btn-mock" style="background:#4F46E5">Find a Coach</button>
+      <button class="btn-mock" style="background:#10B981">Become a Coach</button>
+    </div>
+    <div class="mockup-row">
+      <span class="chip-mock" style="background:#EEF2FF; color:#4F46E5;">🎾 Tennis</span>
+      <span class="chip-mock" style="background:#EEF2FF; color:#4F46E5;">🎹 Piano</span>
+      <span class="chip-mock" style="background:#EEF2FF; color:#4F46E5;">💻 Coding</span>
+      <span class="chip-mock" style="background:#EEF2FF; color:#4F46E5;">📷 Photography</span>
+      <span class="badge-mock" style="background:#ECFDF5; color:#059669;">✓ Profile reviewed</span>
+    </div>
+    <div class="mockup-row">
+      <div class="card-mock">
+        <div class="icon-box" style="background:#EEF2FF; color:#4F46E5;">🔍</div>
+        <h4>Search nearby</h4>
+        <p>Find people by skill, suburb, session type and availability.</p>
+      </div>
+      <div class="card-mock">
+        <div class="icon-box" style="background:#EEF2FF; color:#4F46E5;">✓</div>
+        <h4>Review profiles</h4>
+        <p>Check experience, skills, verified status and rates.</p>
+      </div>
+      <div class="card-mock">
+        <div class="icon-box" style="background:#EEF2FF; color:#4F46E5;">✉</div>
+        <h4>Send a request</h4>
+        <p>Contact the coach and organise the session directly.</p>
+      </div>
+    </div>
+  </div>
+  <div class="palette-note">
+    <strong>Why this works:</strong> Indigo stands out from the sea of blue SaaS products. It feels premium, trustworthy and slightly creative. The emerald accent creates strong contrast for CTAs. Very memorable — think Stripe, Twitch, or Figma's purple range.
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PALETTE 2: Emerald Trust -->
+<!-- ============================================ -->
+<div class="palette-section">
+  <div class="palette-label">
+    <h2>2. Emerald Trust</h2>
+    <span class="tag">Fresh & Trustworthy</span>
+  </div>
+  <div class="palette-swatches">
+    <div class="swatch"><div class="swatch-color" style="background:#059669"></div><div class="swatch-name">Primary</div><div class="swatch-hex">#059669</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#047857"></div><div class="swatch-name">Primary Hover</div><div class="swatch-hex">#047857</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0F172A"></div><div class="swatch-name">Accent</div><div class="swatch-hex">#0F172A</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#1E293B"></div><div class="swatch-name">Accent Hover</div><div class="swatch-hex">#1E293B</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#ECFDF5"></div><div class="swatch-name">Light tint</div><div class="swatch-hex">#ECFDF5</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0F172A"></div><div class="swatch-name">Dark text</div><div class="swatch-hex">#0F172A</div></div>
+  </div>
+  <div class="mockup">
+    <div class="nav-mock">
+      <div class="nav-mock-logo" style="color:#059669">Skill Next Door</div>
+      <div class="nav-mock-links"><span>Find a Coach</span><span>Become a Coach</span></div>
+      <button class="nav-mock-cta" style="background:#059669">Sign In</button>
+    </div>
+    <div class="mockup-hero" style="background: linear-gradient(135deg, #ECFDF5, #D1FAE5);">
+      <h3 style="color:#0F172A">Learn from skilled people nearby</h3>
+      <p style="color:#475569">Find trusted local coaches and skilled people who can help you learn.</p>
+      <button class="btn-mock" style="background:#059669">Find a Coach</button>
+      <button class="btn-mock" style="background:#0F172A">Become a Coach</button>
+    </div>
+    <div class="mockup-row">
+      <span class="chip-mock" style="background:#ECFDF5; color:#047857;">🎾 Tennis</span>
+      <span class="chip-mock" style="background:#ECFDF5; color:#047857;">🎹 Piano</span>
+      <span class="chip-mock" style="background:#ECFDF5; color:#047857;">💻 Coding</span>
+      <span class="chip-mock" style="background:#ECFDF5; color:#047857;">📷 Photography</span>
+      <span class="badge-mock" style="background:#ECFDF5; color:#059669;">✓ Profile reviewed</span>
+    </div>
+    <div class="mockup-row">
+      <div class="card-mock">
+        <div class="icon-box" style="background:#ECFDF5; color:#059669;">🔍</div>
+        <h4>Search nearby</h4>
+        <p>Find people by skill, suburb, session type and availability.</p>
+      </div>
+      <div class="card-mock">
+        <div class="icon-box" style="background:#ECFDF5; color:#059669;">✓</div>
+        <h4>Review profiles</h4>
+        <p>Check experience, skills, verified status and rates.</p>
+      </div>
+      <div class="card-mock">
+        <div class="icon-box" style="background:#ECFDF5; color:#059669;">✉</div>
+        <h4>Send a request</h4>
+        <p>Contact the coach and organise the session directly.</p>
+      </div>
+    </div>
+  </div>
+  <div class="palette-note">
+    <strong>Why this works:</strong> Green communicates trust, growth and community — perfect for a local skills marketplace. Paired with dark navy for CTAs and text, it feels grounded and mature. Think Shopify, Robinhood, or Wise. Very distinct from the standard blue.
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PALETTE 3: Warm Coral -->
+<!-- ============================================ -->
+<div class="palette-section">
+  <div class="palette-label">
+    <h2>3. Warm Coral</h2>
+    <span class="tag">Friendly & Energetic</span>
+  </div>
+  <div class="palette-swatches">
+    <div class="swatch"><div class="swatch-color" style="background:#E85D3A"></div><div class="swatch-name">Primary</div><div class="swatch-hex">#E85D3A</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#D14A28"></div><div class="swatch-name">Primary Hover</div><div class="swatch-hex">#D14A28</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#1E293B"></div><div class="swatch-name">Accent</div><div class="swatch-hex">#1E293B</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0F172A"></div><div class="swatch-name">Accent Hover</div><div class="swatch-hex">#0F172A</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#FEF2EE"></div><div class="swatch-name">Light tint</div><div class="swatch-hex">#FEF2EE</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#1A1A2E"></div><div class="swatch-name">Dark text</div><div class="swatch-hex">#1A1A2E</div></div>
+  </div>
+  <div class="mockup">
+    <div class="nav-mock">
+      <div class="nav-mock-logo" style="color:#E85D3A">Skill Next Door</div>
+      <div class="nav-mock-links"><span>Find a Coach</span><span>Become a Coach</span></div>
+      <button class="nav-mock-cta" style="background:#E85D3A">Sign In</button>
+    </div>
+    <div class="mockup-hero" style="background: linear-gradient(135deg, #FEF2EE, #FDE8E0);">
+      <h3 style="color:#1A1A2E">Learn from skilled people nearby</h3>
+      <p style="color:#475569">Find trusted local coaches and skilled people who can help you learn.</p>
+      <button class="btn-mock" style="background:#E85D3A">Find a Coach</button>
+      <button class="btn-mock" style="background:#1E293B">Become a Coach</button>
+    </div>
+    <div class="mockup-row">
+      <span class="chip-mock" style="background:#FEF2EE; color:#D14A28;">🎾 Tennis</span>
+      <span class="chip-mock" style="background:#FEF2EE; color:#D14A28;">🎹 Piano</span>
+      <span class="chip-mock" style="background:#FEF2EE; color:#D14A28;">💻 Coding</span>
+      <span class="chip-mock" style="background:#FEF2EE; color:#D14A28;">📷 Photography</span>
+      <span class="badge-mock" style="background:#FEF2EE; color:#D14A28;">✓ Profile reviewed</span>
+    </div>
+    <div class="mockup-row">
+      <div class="card-mock">
+        <div class="icon-box" style="background:#FEF2EE; color:#E85D3A;">🔍</div>
+        <h4>Search nearby</h4>
+        <p>Find people by skill, suburb, session type and availability.</p>
+      </div>
+      <div class="card-mock">
+        <div class="icon-box" style="background:#FEF2EE; color:#E85D3A;">✓</div>
+        <h4>Review profiles</h4>
+        <p>Check experience, skills, verified status and rates.</p>
+      </div>
+      <div class="card-mock">
+        <div class="icon-box" style="background:#FEF2EE; color:#E85D3A;">✉</div>
+        <h4>Send a request</h4>
+        <p>Contact the coach and organise the session directly.</p>
+      </div>
+    </div>
+  </div>
+  <div class="palette-note">
+    <strong>Why this works:</strong> Coral/burnt orange is warm, approachable and highly distinctive. Very few marketplace platforms use it — it instantly stands out. Paired with dark navy for balance, it avoids looking childish. Think Reddit, Strava, or Etsy's warm energy. Great for a community feel.
+  </div>
+</div>
+
+<!-- ============================================ -->
+<!-- PALETTE 4: Deep Teal -->
+<!-- ============================================ -->
+<div class="palette-section">
+  <div class="palette-label">
+    <h2>4. Deep Teal</h2>
+    <span class="tag">Calm & Professional</span>
+  </div>
+  <div class="palette-swatches">
+    <div class="swatch"><div class="swatch-color" style="background:#0D9488"></div><div class="swatch-name">Primary</div><div class="swatch-hex">#0D9488</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0F766E"></div><div class="swatch-name">Primary Hover</div><div class="swatch-hex">#0F766E</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#F59E0B"></div><div class="swatch-name">Accent</div><div class="swatch-hex">#F59E0B</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#D97706"></div><div class="swatch-name">Accent Hover</div><div class="swatch-hex">#D97706</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#F0FDFA"></div><div class="swatch-name">Light tint</div><div class="swatch-hex">#F0FDFA</div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#0F172A"></div><div class="swatch-name">Dark text</div><div class="swatch-hex">#0F172A</div></div>
+  </div>
+  <div class="mockup">
+    <div class="nav-mock">
+      <div class="nav-mock-logo" style="color:#0D9488">Skill Next Door</div>
+      <div class="nav-mock-links"><span>Find a Coach</span><span>Become a Coach</span></div>
+      <button class="nav-mock-cta" style="background:#0D9488">Sign In</button>
+    </div>
+    <div class="mockup-hero" style="background: linear-gradient(135deg, #F0FDFA, #CCFBF1);">
+      <h3 style="color:#0F172A">Learn from skilled people nearby</h3>
+      <p style="color:#475569">Find trusted local coaches and skilled people who can help you learn.</p>
+      <button class="btn-mock" style="background:#0D9488">Find a Coach</button>
+      <button class="btn-mock" style="background:#F59E0B; color:#0F172A;">Become a Coach</button>
+    </div>
+    <div class="mockup-row">
+      <span class="chip-mock" style="background:#F0FDFA; color:#0F766E;">🎾 Tennis</span>
+      <span class="chip-mock" style="background:#F0FDFA; color:#0F766E;">🎹 Piano</span>
+      <span class="chip-mock" style="background:#F0FDFA; color:#0F766E;">💻 Coding</span>
+      <span class="chip-mock" style="background:#F0FDFA; color:#0F766E;">📷 Photography</span>
+      <span class="badge-mock" style="background:#F0FDFA; color:#0D9488;">✓ Profile reviewed</span>
+    </div>
+    <div class="mockup-row">
+      <div class="card-mock">
+        <div class="icon-box" style="background:#F0FDFA; color:#0D9488;">🔍</div>
+        <h4>Search nearby</h4>
+        <p>Find people by skill, suburb, session type and availability.</p>
+      </div>
+      <div class="card-mock">
+        <div class="icon-box" style="background:#F0FDFA; color:#0D9488;">✓</div>
+        <h4>Review profiles</h4>
+        <p>Check experience, skills, verified status and rates.</p>
+      </div>
+      <div class="card-mock">
+        <div class="icon-box" style="background:#F0FDFA; color:#0D9488;">✉</div>
+        <h4>Send a request</h4>
+        <p>Contact the coach and organise the session directly.</p>
+      </div>
+    </div>
+  </div>
+  <div class="palette-note">
+    <strong>Why this works:</strong> Teal communicates calm professionalism and trust. Combined with warm amber/gold accent, it creates a memorable contrast that's rare in marketplace design. Think Canva's teal energy or TransferWise/Wise. The teal-gold pairing is distinctive and balanced.
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="palette-section" style="padding: 32px;">
+  <h2 style="margin-bottom: 16px; font-size: 18px;">Quick comparison</h2>
+  <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+    <thead>
+      <tr style="border-bottom: 2px solid #e5e5e5; text-align: left;">
+        <th style="padding: 10px 12px;">Palette</th>
+        <th style="padding: 10px 12px;">Primary</th>
+        <th style="padding: 10px 12px;">Feel</th>
+        <th style="padding: 10px 12px;">Distinctiveness</th>
+        <th style="padding: 10px 12px;">Best for</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 12px; font-weight: 600;">1. Indigo Night</td>
+        <td style="padding: 10px 12px;"><span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:#4F46E5;vertical-align:middle;margin-right:6px"></span>#4F46E5</td>
+        <td style="padding: 10px 12px;">Premium, bold</td>
+        <td style="padding: 10px 12px;">⭐⭐⭐⭐</td>
+        <td style="padding: 10px 12px;">Standing out from blue competitors</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 12px; font-weight: 600;">2. Emerald Trust</td>
+        <td style="padding: 10px 12px;"><span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:#059669;vertical-align:middle;margin-right:6px"></span>#059669</td>
+        <td style="padding: 10px 12px;">Fresh, trustworthy</td>
+        <td style="padding: 10px 12px;">⭐⭐⭐⭐⭐</td>
+        <td style="padding: 10px 12px;">Trust-focused local marketplace</td>
+      </tr>
+      <tr style="border-bottom: 1px solid #f0f0f0;">
+        <td style="padding: 10px 12px; font-weight: 600;">3. Warm Coral</td>
+        <td style="padding: 10px 12px;"><span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:#E85D3A;vertical-align:middle;margin-right:6px"></span>#E85D3A</td>
+        <td style="padding: 10px 12px;">Friendly, warm</td>
+        <td style="padding: 10px 12px;">⭐⭐⭐⭐⭐</td>
+        <td style="padding: 10px 12px;">Community-driven, approachable feel</td>
+      </tr>
+      <tr>
+        <td style="padding: 10px 12px; font-weight: 600;">4. Deep Teal</td>
+        <td style="padding: 10px 12px;"><span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:#0D9488;vertical-align:middle;margin-right:6px"></span>#0D9488</td>
+        <td style="padding: 10px 12px;">Calm, professional</td>
+        <td style="padding: 10px 12px;">⭐⭐⭐⭐</td>
+        <td style="padding: 10px 12px;">Professional + warm accent balance</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+
+</body>
+</html>
