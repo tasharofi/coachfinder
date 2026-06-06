@@ -13,10 +13,10 @@ export function VerifiedCoachBadge({ size = 'default' }) {
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 <path d="m9 12 2 2 4-4"/>
             </svg>
-            Verified
+            Profile reviewed
             {showTooltip && (
                 <span className="badge-tooltip">
-                    This coach has been reviewed and approved by our team.
+                    This coach profile has been reviewed by Skill Next Door before appearing publicly.
                 </span>
             )}
         </span>

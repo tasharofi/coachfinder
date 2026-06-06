@@ -6,10 +6,10 @@ import VerifyEmailBanner from '../components/VerifyEmailBanner';
 
 const STATUS_CONFIG = {
     DRAFT: { label: 'Draft', className: 'draft', message: 'Your coach application is saved as a draft. Complete and submit it to be reviewed.' },
-    PENDING: { label: 'Under Review', className: 'pending', message: 'Your coach profile is under review and is not live yet. We will notify you by email once it is approved.' },
-    APPROVED: { label: 'Live', className: 'approved', message: 'Your coach profile is live and visible to learners.' },
-    REJECTED: { label: 'Not Approved', className: 'rejected', message: 'Your coach application was not approved. You can update and resubmit.' },
-    SUSPENDED: { label: 'Suspended', className: 'suspended', message: 'Your coach profile has been suspended. Contact support for more information.' },
+    PENDING: { label: 'Under Review', className: 'pending', message: 'Your coach profile is under review and is not live yet. We\'ll let you know once your profile has been reviewed. Until then, learners will not see it in search results.' },
+    APPROVED: { label: 'Live', className: 'approved', message: 'Your coach profile is live. Learners can now find your profile by skill and suburb and send session requests.' },
+    REJECTED: { label: 'Not Approved', className: 'rejected', message: 'Your coach profile is not currently live. You can update and resubmit.' },
+    SUSPENDED: { label: 'Suspended', className: 'suspended', message: 'Your coach profile is not currently live. Contact support for more information.' },
 };
 
 export default function Dashboard() {
@@ -146,11 +146,11 @@ function CoachDashboard({ statusInfo, coachStatus, coachProfile, contactRequests
             {/* Contact Requests (for approved coaches) */}
             {coachStatus === 'APPROVED' && (
                 <div className="dashboard-card" style={{ marginTop: 'var(--space-4)' }}>
-                    <h2 className="dashboard-card-title">Booking Requests</h2>
+                    <h2 className="dashboard-card-title">Session Requests</h2>
                     {myRequests.length === 0 ? (
                         <div className="empty-state" style={{ padding: 'var(--space-8)' }}>
                             <div className="empty-state-icon">📬</div>
-                            <p>No booking requests yet. Your profile is live — requests will appear here.</p>
+                            <p>No session requests yet. Your profile is live — requests will appear here.</p>
                         </div>
                     ) : (
                         <div className="sessions-list">
@@ -188,20 +188,20 @@ function LearnerDashboard({ contactRequests, isCoach }) {
         <>
             {!isCoach && (
                 <div className="dashboard-card" style={{ marginBottom: 'var(--space-6)', background: 'var(--color-bg-secondary)' }}>
-                    <h3 style={{ marginBottom: 'var(--space-2)' }}>🎓 Want to teach your skills?</h3>
+                    <h3 style={{ marginBottom: 'var(--space-2)' }}>🎓 Good at something? Teach it locally.</h3>
                     <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)', fontSize: 'var(--font-size-sm)' }}>
-                        Share your expertise and earn extra income by becoming a coach on our platform.
+                        Create a profile, get discovered by learners nearby, and earn from the skills you already have.
                     </p>
                     <Link to="/become-coach" className="btn btn-accent btn-sm">Become a Coach →</Link>
                 </div>
             )}
 
             <div className="dashboard-card">
-                <h2 className="dashboard-card-title">My Requests</h2>
+                <h2 className="dashboard-card-title">My Session Requests</h2>
                 {contactRequests.length === 0 ? (
                     <div className="empty-state" style={{ padding: 'var(--space-8)' }}>
                         <div className="empty-state-icon">📋</div>
-                        <p>You haven't sent any booking requests yet.</p>
+                        <p>You haven't sent any session requests yet.</p>
                         <Link to="/search" className="btn btn-primary btn-sm" style={{ marginTop: 'var(--space-4)' }}>Find a Coach</Link>
                     </div>
                 ) : (

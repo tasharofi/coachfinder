@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import SkillAutocomplete from '../components/SkillAutocomplete';
 import SuburbAutocomplete from '../components/SuburbAutocomplete';
 
-const POPULAR_SKILLS = ['Tennis', 'Piano', 'Guitar', 'Maths', 'English', 'Coding', 'Yoga', 'Swimming'];
+const POPULAR_SKILLS = ['Tennis', 'Piano', 'Guitar', 'Maths', 'English', 'Coding', 'Photography', 'Swimming'];
 
 export default function Landing() {
     const navigate = useNavigate();
@@ -23,9 +23,9 @@ export default function Landing() {
             {/* Hero */}
             <section className="hero">
                 <div className="hero-inner">
-                    <h1 className="hero-title">Learn from skilled people<br />next door</h1>
+                    <h1 className="hero-title">Learn from skilled people nearby</h1>
                     <p className="hero-subtitle">
-                        Find trusted coaches and everyday experts in your area — for tennis, piano, maths, coding and more. Search by skill and suburb.
+                        Find trusted local coaches and skilled people who can help you learn tennis, piano, maths, coding, photography and more.
                     </p>
 
                     <form className="hero-search" onSubmit={handleSearch} id="hero-search-form">
@@ -35,7 +35,7 @@ export default function Landing() {
                                 value={skill}
                                 onChange={(val) => setSkill(val)}
                                 onSelect={(s) => setSkill(s.name)}
-                                placeholder="Try tennis, piano, maths..."
+                                placeholder="Try tennis, piano, maths"
                                 id="hero-skill-input"
                                 allowCreate={false}
                             />
@@ -51,7 +51,7 @@ export default function Landing() {
                         </button>
                     </form>
                     <p className="hero-search-hint">
-                        Search by skill and suburb to get started.
+                        Search by skill and suburb to find people nearby who can help.
                     </p>
                 </div>
             </section>
@@ -70,15 +70,15 @@ export default function Landing() {
 
             {/* Why Skill Next Door? */}
             <section className="why-section">
-                <h2 className="section-title">Why Skill Next Door?</h2>
+                <h2 className="section-title">Why learn through Skill Next Door?</h2>
                 <div className="why-grid">
                     <div className="why-card">
                         <div className="why-card-icon">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
                         </div>
                         <div>
-                            <h3>Trusted local people</h3>
-                            <p>Find coaches in your area, with profiles reviewed before they go live.</p>
+                            <h3>Local and approachable</h3>
+                            <p>Find people nearby who teach the skills you want to learn.</p>
                         </div>
                     </div>
                     <div className="why-card">
@@ -86,8 +86,8 @@ export default function Landing() {
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
                         </div>
                         <div>
-                            <h3>Flexible learning</h3>
-                            <p>Choose online or in-person sessions that fit your schedule.</p>
+                            <h3>Profiles reviewed</h3>
+                            <p>Coach profiles are reviewed before they appear publicly.</p>
                         </div>
                     </div>
                     <div className="why-card">
@@ -95,8 +95,8 @@ export default function Landing() {
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
                         </div>
                         <div>
-                            <h3>Practical skills, real experience</h3>
-                            <p>Learn from people who know their subject and are confident teaching it.</p>
+                            <h3>Flexible sessions</h3>
+                            <p>Choose in-person or online sessions based on what works for you.</p>
                         </div>
                     </div>
                     <div className="why-card">
@@ -104,8 +104,8 @@ export default function Landing() {
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                         </div>
                         <div>
-                            <h3>Choose what suits you</h3>
-                            <p>Compare profiles, availability and rates before sending a request.</p>
+                            <h3>Compare before you request</h3>
+                            <p>Review skills, experience, availability and rates before contacting someone.</p>
                         </div>
                     </div>
                 </div>
@@ -118,12 +118,12 @@ export default function Landing() {
                     <div className="how-step">
                         <div className="how-step-number">1</div>
                         <h3>Search nearby</h3>
-                        <p>Find coaches by skill, suburb, availability and session type.</p>
+                        <p>Find people by skill, suburb, session type and availability.</p>
                     </div>
                     <div className="how-step">
                         <div className="how-step-number">2</div>
                         <h3>Review profiles</h3>
-                        <p>Check experience, skills, verified status and rates before you decide.</p>
+                        <p>Check experience, skills, verified status and rates.</p>
                     </div>
                     <div className="how-step">
                         <div className="how-step-number">3</div>

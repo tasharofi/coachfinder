@@ -22,12 +22,12 @@ export default function BecomeCoach() {
             {/* Hero */}
             <section className="btc-hero">
                 <div className="btc-hero-inner">
-                    <h1 className="btc-hero-title">Good at something?<br />Start coaching it.</h1>
+                    <h1 className="btc-hero-title">Good at something?<br />Start teaching it.</h1>
                     <p className="btc-hero-subtitle">
-                        Whether you play tennis, teach piano, code, cook or speak another language, Skill Next Door helps you create a profile, get discovered locally, and receive coaching requests.
+                        Whether you play tennis, teach piano, code, cook, take photos or speak another language, Skill Next Door helps you create a profile and receive requests from learners nearby.
                     </p>
                     <button className="btn btn-accent btn-lg btc-hero-btn" onClick={handleCTA} id="btc-hero-cta">
-                        Start Coaching →
+                        Apply as Coach →
                     </button>
                 </div>
             </section>
@@ -50,7 +50,7 @@ export default function BecomeCoach() {
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m9 16 2 2 4-4"/></svg>
                         </div>
                         <div>
-                            <h3>Coach on your terms</h3>
+                            <h3>Teach on your terms</h3>
                             <p>Choose when you're available and whether you teach online, in person, or both.</p>
                         </div>
                     </div>
@@ -69,7 +69,7 @@ export default function BecomeCoach() {
                         </div>
                         <div>
                             <h3>Build trust over time</h3>
-                            <p>Create a verified profile and grow your reputation as learners connect with you.</p>
+                            <p>Create a reviewed profile and grow your reputation as learners connect with you.</p>
                         </div>
                     </div>
                 </div>
@@ -82,7 +82,7 @@ export default function BecomeCoach() {
                     <div className="btc-step">
                         <div className="btc-step-number">1</div>
                         <h3>Create your profile</h3>
-                        <p>Tell learners what you teach, where you coach, your availability and your experience.</p>
+                        <p>Tell learners what you teach, where you're available, your experience and your rate.</p>
                     </div>
                     <div className="btc-step">
                         <div className="btc-step-number">2</div>
@@ -97,7 +97,7 @@ export default function BecomeCoach() {
                     <div className="btc-step">
                         <div className="btc-step-number">4</div>
                         <h3>Receive requests</h3>
-                        <p>Interested learners send you a request. You decide how and when to respond.</p>
+                        <p>Learners send a request through Skill Next Door. You decide how and when to respond.</p>
                     </div>
                 </div>
             </section>
@@ -111,7 +111,7 @@ export default function BecomeCoach() {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
                         </div>
                         <div>
-                            <span className="btc-trust-badge">Verified coach profile</span>
+                            <span className="btc-trust-badge">Reviewed coach profiles</span>
                             <p>Approved coaches receive a visible badge so learners know the profile has been reviewed.</p>
                         </div>
                     </div>
@@ -120,8 +120,8 @@ export default function BecomeCoach() {
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
                         </div>
                         <div>
-                            <span className="btc-trust-badge">Email verified</span>
-                            <p>Google sign-in helps confirm your email and adds trust to your profile.</p>
+                            <span className="btc-trust-badge">You stay in control</span>
+                            <p>You choose your skills, availability, rate and how you respond to requests.</p>
                         </div>
                     </div>
                     <div className="btc-trust-item">

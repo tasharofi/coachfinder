@@ -107,7 +107,7 @@ export default function CoachProfile() {
                     </div>
                 ) : (
                     <button className="btn btn-accent btn-lg" onClick={() => setShowContact(true)} style={{ width: '100%', marginBottom: 'var(--space-8)' }} id="profile-contact-btn">
-                        Contact {coach.name?.split(' ')[0]}
+                        Request a Session
                     </button>
                 )}
 
@@ -142,7 +142,7 @@ export default function CoachProfile() {
                 {/* Availability */}
                 {availText !== 'Not specified' && (
                     <div className="profile-section">
-                        <h2 className="profile-section-title">Availability</h2>
+                        <h2 className="profile-section-title">Usually available</h2>
                         <p className="profile-text">{availText}</p>
                     </div>
                 )}

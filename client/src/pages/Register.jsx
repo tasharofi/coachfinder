@@ -59,18 +59,18 @@ export default function Register() {
             <div className="auth-page">
                 <div className="auth-card" style={{ maxWidth: '520px' }}>
                     <h1 className="auth-title">Join Skill Next Door</h1>
-                    <p className="auth-subtitle">How do you want to get started?</p>
+                    <p className="auth-subtitle">Create an account to learn from skilled people nearby or share what you know as a coach.</p>
 
                     <div className="register-paths">
                         <button className="register-path-card" onClick={() => setIntent('learner')}>
                             <div className="register-path-icon">🎓</div>
                             <div className="register-path-title">I want to learn</div>
-                            <div className="register-path-desc">Find and connect with expert coaches in your area</div>
+                            <div className="register-path-desc">Search for local coaches, view profiles and send session requests.</div>
                         </button>
                         <button className="register-path-card" onClick={() => setIntent('coach')}>
                             <div className="register-path-icon">🏆</div>
-                            <div className="register-path-title">I want to coach</div>
-                            <div className="register-path-desc">Share your expertise and earn by teaching others</div>
+                            <div className="register-path-title">I want to teach</div>
+                            <div className="register-path-desc">Create a profile, share your skills and receive requests from learners nearby.</div>
                         </button>
                     </div>
 
@@ -90,12 +90,12 @@ export default function Register() {
                     ← Back
                 </button>
                 <h1 className="auth-title">
-                    {intent === 'coach' ? 'Register as a Coach' : 'Register as a Learner'}
+                    {intent === 'coach' ? 'Apply as Coach' : 'Join as Learner'}
                 </h1>
                 <p className="auth-subtitle">
                     {intent === 'coach'
-                        ? 'Create your account, then set up your coach profile'
-                        : 'Create your account and start finding coaches'}
+                        ? 'Create your account, then set up your coach profile. Profiles are reviewed before going live.'
+                        : 'Create your account and start searching for coaches nearby'}
                 </p>
 
                 {error && <div className="alert alert-error">{error}</div>}

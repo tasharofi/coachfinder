@@ -33,7 +33,7 @@ export default function ContactRequestModal({ coach, onClose, onSent }) {
                         <button className="modal-close" onClick={onClose}>✕</button>
                     </div>
                     <div className="modal-body">
-                        <p style={{ marginBottom: 'var(--space-4)' }}>You need to sign in to contact a coach.</p>
+                        <p style={{ marginBottom: 'var(--space-4)' }}>You need to sign in to request a session.</p>
                         <button className="btn btn-primary btn-lg" onClick={() => navigate('/login')} style={{ width: '100%' }}>
                             Sign In
                         </button>
@@ -99,7 +99,7 @@ export default function ContactRequestModal({ coach, onClose, onSent }) {
             <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px' }}>
                 <div className="modal-header">
                     <h2 className="modal-title">
-                        {success ? 'Request Sent!' : `Contact ${coachName}`}
+                        {success ? 'Request Sent!' : `Request a session with ${coachName}`}
                     </h2>
                     <button className="modal-close" onClick={onClose}>✕</button>
                 </div>
@@ -107,9 +107,9 @@ export default function ContactRequestModal({ coach, onClose, onSent }) {
                     {success ? (
                         <div className="booking-success">
                             <div className="booking-success-icon">✉️</div>
-                            <p>Your request has been sent to {coachName}.</p>
+                            <p>Your request has been sent. The coach will receive your message and can respond directly.</p>
                             <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)' }}>
-                                The coach will respond via email. Your email stays private until you choose to share it.
+                                Your contact details stay private until the coach responds.
                             </p>
                         </div>
                     ) : (
@@ -166,8 +166,8 @@ export default function ContactRequestModal({ coach, onClose, onSent }) {
                             </div>
 
                             <div className="form-group">
-                                <label className="form-label" htmlFor="cr-message">Message / Learning goal *</label>
-                                <textarea id="cr-message" className="form-input form-textarea" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="What would you like to learn? Any specific goals?" rows={3} required />
+                                <label className="form-label" htmlFor="cr-message">What would you like to learn? *</label>
+                                <textarea id="cr-message" className="form-input form-textarea" value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Tell the coach what you'd like to learn and any goals you have." rows={3} required />
                             </div>
 
                             <div className="form-group">

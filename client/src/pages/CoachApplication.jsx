@@ -173,13 +173,12 @@ export default function CoachApplication() {
             <div className="auth-page">
                 <div className="auth-card" style={{ maxWidth: '520px', textAlign: 'center' }}>
                     <div style={{ fontSize: '3rem', marginBottom: 'var(--space-4)' }}>📋</div>
-                    <h1 className="auth-title">Application Submitted</h1>
+                    <h1 className="auth-title">Profile Submitted for Review</h1>
                     <div className="coach-status-banner pending">
-                        Your coach profile is under review and is not live yet.
+                        Your coach profile has been submitted for review. It will not appear publicly until approved.
                     </div>
                     <p style={{ color: 'var(--color-text-secondary)', marginTop: 'var(--space-4)' }}>
-                        Your profile will become visible to learners once approved by our team.
-                        We'll notify you by email.
+                        We'll let you know once your profile has been reviewed. Until then, learners will not see it in search results.
                     </p>
                     <button className="btn btn-primary btn-lg" onClick={() => navigate('/dashboard')} style={{ width: '100%', marginTop: 'var(--space-6)' }}>
                         Go to Dashboard
@@ -212,8 +211,8 @@ export default function CoachApplication() {
     return (
         <div className="apply-page">
             <div className="apply-card">
-                <h1 className="auth-title">Coach Application</h1>
-                <p className="auth-subtitle">Complete your profile to apply as a coach. All fields with * are required.</p>
+                <h1 className="auth-title">Create your coach profile</h1>
+                <p className="auth-subtitle">Tell learners what you teach, where you're available and why they should request a session with you.</p>
 
                 {error && <div className="alert alert-error">{error}</div>}
 
@@ -277,8 +276,8 @@ export default function CoachApplication() {
 
                     {/* Bio */}
                     <div className="form-group">
-                        <label className="form-label" htmlFor="apply-bio">About you / Bio *</label>
-                        <textarea id="apply-bio" className="form-input form-textarea" value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Tell learners about your experience, teaching style, and what they can expect..." rows={4} required />
+                        <label className="form-label" htmlFor="apply-bio">About you *</label>
+                        <textarea id="apply-bio" className="form-input form-textarea" value={form.bio} onChange={(e) => setForm({ ...form, bio: e.target.value })} placeholder="Share your experience, who you enjoy helping, and what learners can expect from a session." rows={4} required />
                     </div>
 
                     {/* Session mode */}
@@ -356,7 +355,7 @@ export default function CoachApplication() {
                     )}
 
                     <button type="submit" className="btn btn-accent btn-lg" disabled={loading || !user?.emailVerified} style={{ width: '100%' }}>
-                        {loading ? 'Submitting...' : !user?.emailVerified ? 'Verify Email to Submit' : 'Submit Application'}
+                        {loading ? 'Submitting...' : !user?.emailVerified ? 'Verify Email to Submit' : 'Submit for Review'}
                     </button>
                 </form>
             </div>

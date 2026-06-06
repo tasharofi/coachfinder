@@ -47,7 +47,7 @@ export default function Login() {
         <div className="auth-page">
             <div className="auth-card">
                 <h1 className="auth-title">Welcome back</h1>
-                <p className="auth-subtitle">Sign in to your Skill Next Door account</p>
+                <p className="auth-subtitle">Sign in to manage your profile, search for coaches or respond to session requests.</p>
 
                 {error && <div className="alert alert-error">{error}</div>}
 
@@ -87,7 +87,7 @@ export default function Login() {
                 )}
 
                 <p className="auth-footer">
-                    Don't have an account? <Link to="/register">Create one</Link>
+                    New to Skill Next Door? <Link to="/register">Create an account</Link>
                 </p>
             </div>
         </div>

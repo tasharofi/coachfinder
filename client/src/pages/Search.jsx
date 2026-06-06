@@ -180,7 +180,9 @@ export default function Search() {
                         ) : coaches.length === 0 ? (
                             <div className="empty-state">
                                 <div className="empty-state-icon">🔍</div>
-                                <p>No coaches found. Try adjusting your filters.</p>
+                                <h3 style={{ marginBottom: 'var(--space-2)' }}>No matching coaches yet</h3>
+                                <p>Try a nearby suburb, a broader skill, or check back soon as more coaches join Skill Next Door.</p>
+                                <button className="btn btn-primary btn-sm" onClick={() => { setSkill(''); setSuburb(''); setSessionMode(''); setPriceRange(0); setAvailability(''); handleSearch(); }} style={{ marginTop: 'var(--space-4)' }}>Clear filters</button>
                             </div>
                         ) : (
                             coaches.map((coach) => (
@@ -295,7 +297,7 @@ function CoachDetailPanel({ coach, onBack, onContact }) {
             )}
 
             <button className="btn btn-accent btn-lg" onClick={onContact} style={{ width: '100%', marginBottom: 'var(--space-8)' }}>
-                Contact Coach
+                Request a Session
             </button>
         </div>
     );
