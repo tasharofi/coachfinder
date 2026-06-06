@@ -630,21 +630,29 @@ select.form-input {
 }
 
 .popular-chip {
-  padding: 8px 20px;
-  border: 1px solid var(--color-border);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 22px;
+  border: 1px solid rgba(30, 58, 138, 0.1);
   border-radius: 999px;
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: var(--color-text-secondary);
+  color: #1E3A8A;
   transition: all 0.2s ease;
-  background: var(--color-bg);
+  background: #F0F4FA;
+}
+
+.popular-chip svg {
+  flex-shrink: 0;
 }
 
 .popular-chip:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: #EFF6FF;
+  border-color: rgba(30, 58, 138, 0.25);
+  color: #1E3A8A;
+  background: #E0E8F5;
   transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.08);
 }
 
 /* Why learn through CoachFinder */
@@ -2480,8 +2488,14 @@ select.form-input {
   }
 
   .popular-chip {
-    padding: 6px 16px;
+    padding: 8px 16px;
     font-size: var(--font-size-xs);
+    gap: 8px;
+  }
+
+  .popular-chip svg {
+    width: 16px;
+    height: 16px;
   }
 
   .how-steps {

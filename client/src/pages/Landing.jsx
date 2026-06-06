@@ -2,8 +2,18 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SkillAutocomplete from '../components/SkillAutocomplete';
 import SuburbAutocomplete from '../components/SuburbAutocomplete';
+import { Trophy, Piano, Guitar, Calculator, Languages, Code2, Camera, Waves } from 'lucide-react';
 
-const POPULAR_SKILLS = ['Tennis', 'Piano', 'Guitar', 'Maths', 'English', 'Coding', 'Photography', 'Swimming'];
+const POPULAR_SKILLS = [
+    { name: 'Tennis', icon: Trophy },
+    { name: 'Piano', icon: Piano },
+    { name: 'Guitar', icon: Guitar },
+    { name: 'Maths', icon: Calculator },
+    { name: 'English', icon: Languages },
+    { name: 'Coding', icon: Code2 },
+    { name: 'Photography', icon: Camera },
+    { name: 'Swimming', icon: Waves },
+];
 
 export default function Landing() {
     const navigate = useNavigate();
@@ -60,9 +70,10 @@ export default function Landing() {
             <section className="popular-section">
                 <h2 className="section-title">Popular skills</h2>
                 <div className="popular-grid">
-                    {POPULAR_SKILLS.map(skillName => (
+                    {POPULAR_SKILLS.map(({ name: skillName, icon: Icon }) => (
                         <button key={skillName} className="popular-chip" onClick={() => navigate(`/search?skill=${encodeURIComponent(skillName)}`)}>
-                            {skillName}
+                            <Icon size={18} strokeWidth={1.75} />
+                            <span>{skillName}</span>
                         </button>
                     ))}
                 </div>
