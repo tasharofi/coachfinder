@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SkillAutocomplete from '../components/SkillAutocomplete';
 import SuburbAutocomplete from '../components/SuburbAutocomplete';
-import { Trophy, Piano, Guitar, Calculator, Languages, Code2, Camera, Waves } from 'lucide-react';
+import { Trophy, Piano, Guitar, Calculator, Languages, Code2, Camera, Waves, Search, BadgeCheck, Send } from 'lucide-react';
 
 const POPULAR_SKILLS = [
     { name: 'Tennis', icon: Trophy },
@@ -127,17 +127,26 @@ export default function Landing() {
                 <h2 className="section-title">How it works</h2>
                 <div className="how-steps">
                     <div className="how-step">
-                        <div className="how-step-number">1</div>
+                        <span className="how-step-label">Step 1</span>
+                        <div className="how-step-icon">
+                            <Search size={22} strokeWidth={1.75} />
+                        </div>
                         <h3>Search nearby</h3>
                         <p>Find people by skill, suburb, session type and availability.</p>
                     </div>
                     <div className="how-step">
-                        <div className="how-step-number">2</div>
+                        <span className="how-step-label">Step 2</span>
+                        <div className="how-step-icon">
+                            <BadgeCheck size={22} strokeWidth={1.75} />
+                        </div>
                         <h3>Review profiles</h3>
                         <p>Check experience, skills, verified status and rates.</p>
                     </div>
                     <div className="how-step">
-                        <div className="how-step-number">3</div>
+                        <span className="how-step-label">Step 3</span>
+                        <div className="how-step-icon">
+                            <Send size={22} strokeWidth={1.75} />
+                        </div>
                         <h3>Send a request</h3>
                         <p>Contact the coach through Skill Next Door and organise the session directly.</p>
                     </div>
