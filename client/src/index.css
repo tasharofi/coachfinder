@@ -5,19 +5,29 @@
    ============================================ */
 
 :root {
-  /* Colors */
-  --color-primary: #2563EB;
-  --color-primary-hover: #1D4ED8;
-  --color-accent: #0D9488;
-  --color-accent-hover: #0F766E;
+  /* Colors — SkillNext Orange brand palette */
+  /* Primary brand: orange (main accent + primary actions) */
+  --color-primary: #F97316;
+  --color-primary-hover: #EA580C;
+  --color-primary-active: #C2410C;
+  --color-primary-soft: #FFF7ED;        /* soft orange background tint */
+  --color-primary-soft-hover: #FFEDD5;  /* slightly stronger soft orange */
+  --color-primary-ring: #FED7AA;        /* focus ring / subtle orange border */
+  --color-link: #EA580C;                /* darker orange for text links (contrast) */
+  /* Accent unified to orange (coach-flow CTAs/highlights) */
+  --color-accent: #F97316;
+  --color-accent-hover: #EA580C;
+  /* Secondary blue — used sparingly for informational states only */
+  --color-secondary: #2563EB;
+  --color-secondary-soft: #EFF6FF;
   --color-bg: #FFFFFF;
-  --color-bg-secondary: #F8FAFC;
-  --color-bg-tertiary: #F1F5F9;
-  --color-text: #0F172A;
-  --color-text-secondary: #475569;
+  --color-bg-secondary: #FAFAF9;
+  --color-bg-tertiary: #F3F4F6;
+  --color-text: #1F2937;
+  --color-text-secondary: #64748B;
   --color-text-muted: #94A3B8;
-  --color-border: #E2E8F0;
-  --color-border-hover: #CBD5E1;
+  --color-border: #E5E7EB;
+  --color-border-hover: #D1D5DB;
   --color-success: #16A34A;
   --color-warning: #D97706;
   --color-error: #DC2626;
@@ -86,7 +96,7 @@ button {
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--color-link);
   text-decoration: none;
 }
 
@@ -297,7 +307,7 @@ a:hover {
 .form-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
 }
 
 .form-input::placeholder {
@@ -506,7 +516,9 @@ select.form-input {
 .hero {
   text-align: center;
   padding: 0 var(--space-6);
-  background: linear-gradient(168deg, #F8FAFC 0%, #EEF2FF 40%, #F0F9FF 70%, #F8FAFC 100%);
+  background:
+    radial-gradient(900px 320px at 50% -40px, rgba(249, 115, 22, 0.10), transparent 70%),
+    linear-gradient(180deg, #FFF7ED 0%, #FFFFFF 100%);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -550,7 +562,7 @@ select.form-input {
 
 .hero-search:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 24px rgba(37, 99, 235, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 0 0 3px var(--color-primary-ring), 0 4px 24px rgba(249, 115, 22, 0.12), 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .hero-search-field {
@@ -634,25 +646,26 @@ select.form-input {
   align-items: center;
   gap: 10px;
   padding: 10px 22px;
-  border: 1px solid rgba(30, 58, 138, 0.1);
+  border: 1px solid var(--color-primary-ring);
   border-radius: 999px;
   font-size: var(--font-size-sm);
   font-weight: 500;
-  color: #1E3A8A;
+  color: var(--color-text);
   transition: all 0.2s ease;
-  background: #F0F4FA;
+  background: var(--color-primary-soft);
 }
 
 .popular-chip svg {
   flex-shrink: 0;
+  color: var(--color-primary);
 }
 
 .popular-chip:hover {
-  border-color: rgba(30, 58, 138, 0.25);
-  color: #1E3A8A;
-  background: #E0E8F5;
+  border-color: #FDBA74;
+  color: var(--color-text);
+  background: var(--color-primary-soft-hover);
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.08);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.12);
 }
 
 /* Why learn through CoachFinder */
@@ -688,7 +701,7 @@ select.form-input {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: #EFF6FF;
+  background: var(--color-primary-soft);
   color: var(--color-primary);
   display: flex;
   align-items: center;
@@ -748,7 +761,7 @@ select.form-input {
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: #F0F4FA;
+  background: var(--color-primary-soft);
   color: var(--color-primary);
   display: flex;
   align-items: center;
@@ -828,7 +841,7 @@ select.form-input {
 .filter-input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
 }
 
 .filter-cell-grow .suburb-autocomplete .form-input,
@@ -920,7 +933,7 @@ select.form-input {
 
 .coach-card.selected {
   border-color: var(--color-primary);
-  background: rgba(37, 99, 235, 0.04);
+  background: rgba(249, 115, 22, 0.06);
 }
 
 .coach-card-header {
@@ -985,8 +998,8 @@ select.form-input {
   padding: 2px var(--space-2);
   font-size: var(--font-size-xs);
   font-weight: 500;
-  background: var(--color-bg-tertiary);
-  color: var(--color-primary);
+  background: var(--color-primary-soft);
+  color: var(--color-primary-active);
   border-radius: 4px;
 }
 
@@ -1305,7 +1318,9 @@ select.form-input {
 .btc-hero {
   text-align: center;
   padding: 0 var(--space-6);
-  background: linear-gradient(168deg, #F0FDF4 0%, #ECFDF5 40%, #F0FDFA 70%, #F8FAFC 100%);
+  background:
+    radial-gradient(900px 320px at 50% -40px, rgba(249, 115, 22, 0.10), transparent 70%),
+    linear-gradient(180deg, #FFF7ED 0%, #FFFFFF 100%);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -1395,7 +1410,7 @@ select.form-input {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: #ECFDF5;
+  background: var(--color-primary-soft);
   color: var(--color-accent);
   display: flex;
   align-items: center;
@@ -1439,7 +1454,7 @@ select.form-input {
   font-weight: 700;
   font-size: var(--font-size-base);
   margin: 0 auto var(--space-4);
-  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.2);
+  box-shadow: 0 2px 8px rgba(249, 115, 22, 0.28);
 }
 
 .btc-step h3 {
@@ -1484,7 +1499,7 @@ select.form-input {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: #ECFDF5;
+  background: var(--color-primary-soft);
   color: var(--color-accent);
   display: flex;
   align-items: center;
@@ -1508,7 +1523,7 @@ select.form-input {
 .btc-cta-section {
   text-align: center;
   padding: 64px var(--space-6);
-  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+  background: linear-gradient(135deg, #1F2937 0%, #111827 100%);
   margin-top: 0;
 }
 
@@ -1522,7 +1537,7 @@ select.form-input {
 
 .btc-cta-subtitle {
   font-size: var(--font-size-base);
-  color: #94A3B8;
+  color: #D1D5DB;
   margin-bottom: var(--space-8);
   max-width: 480px;
   margin-left: auto;
@@ -1832,7 +1847,7 @@ select.form-input {
 
 .filter-cell-grow .skill-autocomplete .form-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.18);
 }
 
 .hero-search-field .skill-autocomplete .form-input {
@@ -1967,8 +1982,8 @@ select.form-input {
 }
 
 .session-status.new {
-  background: #DBEAFE;
-  color: var(--color-primary);
+  background: var(--color-secondary-soft);
+  color: var(--color-secondary);
 }
 
 .session-status.sent {
@@ -2640,7 +2655,7 @@ select.form-input {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-primary-light, #e8edf5);
+  background: var(--color-primary-light, #FFF7ED);
   color: var(--color-primary);
   display: flex;
   align-items: center;
@@ -3084,7 +3099,7 @@ select.form-input {
 }
 
 .btn-ai-helper:hover:not(:disabled) {
-  background: hsl(221, 83%, 53%, 0.06);
+  background: hsl(25, 95%, 53%, 0.06);
   border-color: var(--color-primary);
 }
 
@@ -3133,7 +3148,7 @@ select.form-input {
 }
 
 .ai-suggestion-option:hover {
-  background: hsl(221, 83%, 53%, 0.06);
+  background: hsl(25, 95%, 53%, 0.06);
   border-color: var(--color-primary);
 }
 
@@ -3185,15 +3200,15 @@ select.form-input {
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-xs);
   color: var(--color-primary);
-  background: hsl(221, 83%, 53%, 0.08);
-  border: 1px solid hsl(221, 83%, 53%, 0.2);
+  background: hsl(25, 95%, 53%, 0.08);
+  border: 1px solid hsl(25, 95%, 53%, 0.2);
   border-radius: 999px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .ai-skill-tag:hover {
-  background: hsl(221, 83%, 53%, 0.15);
+  background: hsl(25, 95%, 53%, 0.15);
   border-color: var(--color-primary);
 }
 
@@ -3212,8 +3227,8 @@ select.form-input {
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-sm);
   color: var(--color-primary);
-  background: hsl(221, 83%, 53%, 0.08);
-  border: 1px solid hsl(221, 83%, 53%, 0.2);
+  background: hsl(25, 95%, 53%, 0.08);
+  border: 1px solid hsl(25, 95%, 53%, 0.2);
   border-radius: 999px;
 }
 
