@@ -32,9 +32,9 @@ export default function Navbar() {
                         </>
                     ) : (
                         <>
-                            <Link to="/become-coach" className="btn btn-accent btn-sm">Become a Coach</Link>
-                            <Link to="/login" className="btn btn-outline btn-sm">Sign In</Link>
-                            <Link to="/register" className="btn btn-primary btn-sm">Register</Link>
+                            <Link to="/become-coach" className="btn btn-primary btn-pill nav-cta">Start Teaching</Link>
+                            <Link to="/login" className="btn btn-outline btn-pill nav-cta">Sign In</Link>
+                            <Link to="/register" className="btn btn-soft btn-pill nav-cta">Register</Link>
                         </>
                     )}
                 </div>
@@ -56,7 +56,7 @@ export default function Navbar() {
                     </>
                 ) : (
                     <>
-                        <Link to="/become-coach" className="nav-mobile-link nav-mobile-accent" onClick={() => setMenuOpen(false)}>Become a Coach</Link>
+                        <Link to="/become-coach" className="nav-mobile-link nav-mobile-accent" onClick={() => setMenuOpen(false)}>Start Teaching</Link>
                         <Link to="/login" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Sign In</Link>
                         <Link to="/register" className="nav-mobile-link" onClick={() => setMenuOpen(false)}>Register</Link>
                     </>

@@ -152,6 +152,28 @@ a:hover {
   background: var(--color-bg-secondary);
 }
 
+/* Soft teal secondary button (e.g. header Register) */
+.btn-soft {
+  background: var(--color-primary-soft);
+  color: var(--color-link);
+  border: 1px solid var(--color-primary-ring);
+}
+
+.btn-soft:hover {
+  background: var(--color-primary-soft-hover);
+}
+
+/* Pill shape + balanced sizing for header action buttons */
+.btn-pill {
+  border-radius: 999px;
+}
+
+.nav-cta {
+  padding: 9px 18px;
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+}
+
 .btn-sm {
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-xs);
@@ -997,13 +1019,20 @@ select.form-input {
   margin-bottom: var(--space-2);
 }
 
+/* Skill chips — neutral content/category tags (not trust badges) */
 .skill-tag {
   padding: 2px var(--space-2);
   font-size: var(--font-size-xs);
   font-weight: 500;
-  background: var(--color-primary-soft);
-  color: var(--color-primary-active);
+  background: #F8FAFC;
+  color: #334155;
+  border: 1px solid #E2E8F0;
   border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.skill-tag:hover {
+  background: #F1F5F9;
 }
 
 .coach-card-avail {
@@ -1229,14 +1258,18 @@ select.form-input {
   position: relative;
 }
 
+/* Profile reviewed — strongest trust signal (teal) */
 .badge-verified {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-active);
+  background: #E6FFFA;
+  color: #007366;
+  border: 1px solid #99F6E4;
 }
 
+/* Email verified — secondary, system-like trust signal (blue) */
 .badge-email {
-  background: var(--color-primary-soft);
-  color: var(--color-primary-active);
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #BFDBFE;
 }
 
 .badge.small {

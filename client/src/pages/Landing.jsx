@@ -160,7 +160,7 @@ export default function Landing() {
                     Create a profile, get discovered by learners nearby, and earn from the skills you already have.
                 </p>
                 <button className="btn btn-accent btn-lg" onClick={() => navigate('/become-coach')}>
-                    Become a Coach →
+                    Start Teaching →
                 </button>
             </section>
         </div>

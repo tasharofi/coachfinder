@@ -64,7 +64,7 @@ export default function Dashboard() {
                         <p className="dashboard-subtitle">{user.email}</p>
                     </div>
                     {!isCoach && (
-                        <Link to="/become-coach" className="btn btn-accent btn-sm">Become a Coach</Link>
+                        <Link to="/become-coach" className="btn btn-accent btn-sm">Start Teaching</Link>
                     )}
                 </div>
             </div>
@@ -192,7 +192,7 @@ function LearnerDashboard({ contactRequests, isCoach }) {
                     <p style={{ color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)', fontSize: 'var(--font-size-sm)' }}>
                         Create a profile, get discovered by learners nearby, and earn from the skills you already have.
                     </p>
-                    <Link to="/become-coach" className="btn btn-accent btn-sm">Become a Coach →</Link>
+                    <Link to="/become-coach" className="btn btn-accent btn-sm">Start Teaching →</Link>
                 </div>
             )}
 

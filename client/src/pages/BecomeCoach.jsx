@@ -27,7 +27,7 @@ export default function BecomeCoach() {
                         Whether you play tennis, teach piano, code, cook, take photos or speak another language, Skill Next Door helps you create a profile and receive requests from learners nearby.
                     </p>
                     <button className="btn btn-accent btn-lg btc-hero-btn" onClick={handleCTA} id="btc-hero-cta">
-                        Apply as Coach →
+                        Start Teaching →
                     </button>
                 </div>
             </section>
