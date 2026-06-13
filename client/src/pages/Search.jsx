@@ -192,7 +192,6 @@ export default function Search() {
                                             <div className="coach-card-name">{coach.user?.name}</div>
                                             <div className="coach-card-badges">
                                                 {coach.status === 'APPROVED' && <VerifiedCoachBadge size="small" />}
-                                                {coach.user?.emailVerified && <EmailVerifiedBadge size="small" />}
                                             </div>
                                         </div>
                                         <button className="coach-card-open" onClick={(e) => { e.stopPropagation(); window.open(`/coach/${coach.user?.slug}`, '_blank'); }} title="Open in new tab" aria-label="Open profile in new tab">↗</button>
@@ -206,12 +205,14 @@ export default function Search() {
                                     </div>
                                     {coach.skills?.length > 0 && (
                                         <div className="coach-card-skills">
-                                            {coach.skills.map((s) => (
+                                            {coach.skills.slice(0, 3).map((s) => (
                                                 <span key={s.skill?.id || s.id} className="skill-tag">{s.skill?.name || s.name}</span>
                                             ))}
+                                            {coach.skills.length > 3 && (
+                                                <span className="skill-tag skill-tag-more">+{coach.skills.length - 3} more</span>
+                                            )}
                                         </div>
                                     )}
-                                    <div className="coach-card-avail">{formatAvailability(coach.availability)}</div>
                                     {coach.bio && <p className="coach-card-bio">{coach.bio}</p>}
                                 </div>
                             ))
