@@ -558,9 +558,7 @@ select.form-input {
 .hero {
   text-align: center;
   padding: 0 var(--space-6);
-  background:
-    radial-gradient(900px 320px at 50% -40px, rgba(var(--brand-rgb), 0.10), transparent 70%),
-    linear-gradient(180deg, var(--color-primary-soft) 0%, #FFFFFF 100%);
+  background: var(--color-page);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -1371,9 +1369,7 @@ select.form-input {
 .btc-hero {
   text-align: center;
   padding: 0 var(--space-6);
-  background:
-    radial-gradient(900px 320px at 50% -40px, rgba(var(--brand-rgb), 0.10), transparent 70%),
-    linear-gradient(180deg, var(--color-primary-soft) 0%, #FFFFFF 100%);
+  background: var(--color-page);
   border-bottom: 1px solid var(--color-border);
 }
 
