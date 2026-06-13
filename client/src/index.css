@@ -5,35 +5,37 @@
    ============================================ */
 
 :root {
-  /* Colors — Doorbell Amber theme */
-  /* Amber is a LIGHT colour: it is used as a FILL with dark-ink text on top
-     (--color-on-primary). Amber used as text/icons on light surfaces uses the
-     dark amber --color-primary-active for legibility.
-     To re-skin: change --brand-rgb plus the primary/soft/ring/link values. */
-  --brand-rgb: 242, 169, 30;            /* #F2A91E as RGB channels for rgba() tints */
-  --color-primary: #F2A91E;             /* bright amber — fills (buttons, active states) */
-  --color-primary-hover: #C8870D;       /* amber-dark — hover / pressed */
-  --color-primary-active: #C8870D;      /* amber-dark — amber text/icons on light, accents */
-  --color-on-primary: #231D0F;          /* dark ink for labels/icons sitting ON amber */
-  --color-primary-soft: #FCF3DC;        /* soft amber fill (avatars, icon tiles, highlights) */
-  --color-primary-soft-hover: #FAEAC4;  /* chip / pill background */
-  --color-primary-ring: #F4D58A;        /* soft amber focus ring / subtle border */
-  --color-link: #C8870D;                /* amber-dark for text links (contrast on white) */
-  /* Accent unified to amber */
-  --color-accent: #F2A91E;
-  --color-accent-hover: #C8870D;
-  /* Secondary — retained, largely unused under amber theme */
-  --color-secondary: #C8870D;
-  --color-secondary-soft: #FAEAC4;
-  --color-page: #FFFDF7;                /* page background */
+  /* Colors — Material 3 (Indigo) theme.
+     M3 role pairs: every fill has a matching "on" colour for guaranteed contrast.
+     --color-primary = fill (white text via --color-on-primary);
+     --color-primary-soft = M3 primary-container (dark text via --color-primary-active).
+     To re-skin: change --brand-rgb plus the primary/soft/ring values. */
+  --brand-rgb: 71, 93, 146;             /* #475D92 (M3 primary) for rgba() tints */
+  --color-primary: #475D92;             /* M3 primary — fills (buttons, CTAs, active) */
+  --color-primary-hover: #3B4E80;       /* darker — hover / pressed */
+  --color-primary-active: #324577;      /* darkest — also indigo text/icons on light */
+  --color-on-primary: #FFFFFF;          /* white text on primary fills */
+  --color-primary-soft: #DAE2FF;        /* M3 primary-container — soft fills, chips, avatars */
+  --color-primary-soft-hover: #C4D0F5;  /* deeper container for hover */
+  --color-primary-ring: #B6C4F2;        /* soft indigo focus ring / subtle border */
+  --color-link: #475D92;                /* primary indigo — links (AA on white) */
+  /* Accent unified to primary indigo (matches the chosen sample's CTAs) */
+  --color-accent: #475D92;
+  --color-accent-hover: #3B4E80;
+  /* Tertiary — M3 accent used sparingly (e.g. Email verified badge) */
+  --color-tertiary-container: #FFD7F2;
+  --color-on-tertiary-container: #5B3D5B;
+  --color-secondary: #475D92;
+  --color-secondary-soft: #DDE2F9;
+  --color-page: #FAF8FF;                /* M3 surface — page background */
   --color-bg: #FFFFFF;                  /* surfaces / cards */
-  --color-bg-secondary: #FBF8EF;        /* warm subtle section background */
-  --color-bg-tertiary: #F5F1E6;         /* warm neutral fill */
-  --color-text: #231D0F;                /* body ink */
-  --color-text-secondary: #7A6F58;      /* muted */
-  --color-text-muted: #A99E86;          /* lighter warm muted (placeholders/faint) */
-  --color-border: #E5E7EB;
-  --color-border-hover: #D8D2C4;
+  --color-bg-secondary: #EEEDF4;        /* M3 surface-container — subtle sections */
+  --color-bg-tertiary: #EAE9F1;         /* M3 surface-container-high — neutral fills */
+  --color-text: #1A1B21;                /* M3 on-surface */
+  --color-text-secondary: #44464F;      /* M3 on-surface-variant */
+  --color-text-muted: #74777F;          /* M3 outline — faint / placeholder text */
+  --color-border: #C4C6D0;              /* M3 outline-variant */
+  --color-border-hover: #AEB0BA;
   --color-success: #16A34A;
   --color-warning: #D97706;
   --color-error: #DC2626;
@@ -174,8 +176,8 @@ a:hover {
 
 /* Header primary action: single soft teal pill */
 .nav-cta {
-  background: var(--color-primary-soft);              /* #FCF3DC */
-  color: var(--color-primary-active);                 /* #C8870D — readable amber on soft fill */
+  background: var(--color-primary-soft);              /* #DAE2FF — M3 primary-container */
+  color: var(--color-primary-active);                 /* #324577 — readable indigo on container */
   border: none;                                       /* flat, minimal */
   border-radius: 999px;
   padding: 10px 20px;
@@ -185,7 +187,7 @@ a:hover {
 }
 
 .nav-cta:hover {
-  background: var(--color-primary-soft-hover);         /* #FAEAC4 */
+  background: var(--color-primary-soft-hover);         /* #C4D0F5 */
   text-decoration: none;                              /* no underline on hover */
 }
 
@@ -692,7 +694,7 @@ select.form-input {
   font-weight: 500;
   color: var(--color-text);
   transition: all 0.2s ease;
-  background: var(--color-primary-soft-hover);
+  background: var(--color-primary-soft);
 }
 
 .popular-chip svg {
@@ -703,7 +705,7 @@ select.form-input {
 .popular-chip:hover {
   border-color: var(--color-primary);
   color: var(--color-text);
-  background: #F4DCA0;
+  background: var(--color-primary-soft-hover);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(var(--brand-rgb), 0.12);
 }
@@ -1280,11 +1282,11 @@ select.form-input {
   border: 1px solid var(--color-primary-ring);
 }
 
-/* Email verified — secondary, system-like trust signal (blue) */
+/* Email verified — secondary signal, M3 tertiary container (distinct from indigo) */
 .badge-email {
-  background: #EFF6FF;
-  color: #2563EB;
-  border: 1px solid #BFDBFE;
+  background: var(--color-tertiary-container);
+  color: var(--color-on-tertiary-container);
+  border: 1px solid #F5C0E8;
 }
 
 .badge.small {
@@ -1574,7 +1576,7 @@ select.form-input {
 .btc-cta-section {
   text-align: center;
   padding: 64px var(--space-6);
-  background: linear-gradient(135deg, #231D0F 0%, #14100A 100%);
+  background: linear-gradient(135deg, #2B3357 0%, #1A1B2E 100%);
   margin-top: 0;
 }
 
@@ -2706,7 +2708,7 @@ select.form-input {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--color-primary-light, #FCF3DC);
+  background: var(--color-primary-light, #DAE2FF);
   color: var(--color-primary-active);
   display: flex;
   align-items: center;
