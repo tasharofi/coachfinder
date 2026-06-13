@@ -80,22 +80,34 @@ export default function BecomeCoach() {
                 <h2 className="btc-section-title">How it works</h2>
                 <div className="btc-steps">
                     <div className="btc-step">
-                        <div className="btc-step-number">1</div>
+                        <div className="btc-step-label">STEP 1</div>
+                        <div className="btc-step-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="M19 16v6"/><path d="M22 19h-6"/></svg>
+                        </div>
                         <h3>Create your profile</h3>
                         <p>Tell learners what you teach, where you're available, your experience and your rate.</p>
                     </div>
                     <div className="btc-step">
-                        <div className="btc-step-number">2</div>
+                        <div className="btc-step-label">STEP 2</div>
+                        <div className="btc-step-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></svg>
+                        </div>
                         <h3>Get reviewed</h3>
                         <p>We review coach profiles before they appear publicly to help keep the platform trusted.</p>
                     </div>
                     <div className="btc-step">
-                        <div className="btc-step-number">3</div>
+                        <div className="btc-step-label">STEP 3</div>
+                        <div className="btc-step-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="m8 11 2 2 4-4"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        </div>
                         <h3>Get discovered</h3>
                         <p>Once approved, learners can find your profile by skill and suburb.</p>
                     </div>
                     <div className="btc-step">
-                        <div className="btc-step-number">4</div>
+                        <div className="btc-step-label">STEP 4</div>
+                        <div className="btc-step-icon">
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </div>
                         <h3>Receive requests</h3>
                         <p>Learners send a request through Skill Next Door. You decide how and when to respond.</p>
                     </div>

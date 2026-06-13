@@ -1495,19 +1495,25 @@ select.form-input {
   text-align: center;
 }
 
-.btc-step-number {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  color: var(--color-on-primary);
+.btc-step-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.btc-step-icon {
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  background: var(--color-primary-soft);   /* soft M3 primary-container */
+  color: var(--color-primary-active);      /* brand-dark icon, not solid primary */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: var(--font-size-base);
   margin: 0 auto var(--space-4);
-  box-shadow: 0 2px 8px rgba(var(--brand-rgb), 0.28);
 }
 
 .btc-step h3 {
