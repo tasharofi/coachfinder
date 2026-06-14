@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
 import { googleAuth, register as registerApi } from '../services/api';
-import { Lightbulb, HeartHandshake } from 'lucide-react';
+import { SearchCheck, HandHelping } from 'lucide-react';
 
 export default function Register() {
     const navigate = useNavigate();
@@ -64,12 +64,12 @@ export default function Register() {
 
                     <div className="register-paths">
                         <button className="register-path-card" onClick={() => setIntent('learner')}>
-                            <div className="register-path-icon"><Lightbulb size={44} strokeWidth={1.75} /></div>
+                            <div className="register-path-icon"><SearchCheck size={44} strokeWidth={1.75} /></div>
                             <div className="register-path-title">I want to learn</div>
                             <div className="register-path-desc">Search for local coaches, view profiles and send session requests.</div>
                         </button>
                         <button className="register-path-card" onClick={() => setIntent('coach')}>
-                            <div className="register-path-icon"><HeartHandshake size={44} strokeWidth={1.75} /></div>
+                            <div className="register-path-icon"><HandHelping size={44} strokeWidth={1.75} /></div>
                             <div className="register-path-title">I want to teach</div>
                             <div className="register-path-desc">Create a profile, share your skills and receive requests from learners nearby.</div>
                         </button>

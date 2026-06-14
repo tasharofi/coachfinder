@@ -5,37 +5,36 @@
    ============================================ */
 
 :root {
-  /* Colors — Material 3 (Indigo) theme.
-     M3 role pairs: every fill has a matching "on" colour for guaranteed contrast.
-     --color-primary = fill (white text via --color-on-primary);
-     --color-primary-soft = M3 primary-container (dark text via --color-primary-active).
+  /* Colors — Sage / Deep Teal (Material-inspired) theme.
+     Role pairs: fills use --color-on-primary (white) for text;
+     soft green container (--color-primary-soft) uses --color-primary-active (dark)
+     for text; brand-green foreground on light surfaces uses --color-primary.
      To re-skin: change --brand-rgb plus the primary/soft/ring values. */
-  --brand-rgb: 71, 93, 146;             /* #475D92 (M3 primary) for rgba() tints */
-  --color-primary: #475D92;             /* M3 primary — fills (buttons, CTAs, active) */
-  --color-primary-hover: #3B4E80;       /* darker — hover / pressed */
-  --color-primary-active: #324577;      /* darkest — also indigo text/icons on light */
+  --brand-rgb: 76, 100, 68;             /* #4C6444 (sage primary) for rgba() tints */
+  --color-primary: #4C6444;             /* sage primary — fills + brand-green text/icons */
+  --color-primary-hover: #3F5538;       /* darker — hover / pressed */
+  --color-primary-active: #0B2008;      /* on-primary-container — dark text/icons on soft green */
   --color-on-primary: #FFFFFF;          /* white text on primary fills */
-  --color-primary-soft: #DAE2FF;        /* M3 primary-container — soft fills, chips, avatars */
-  --color-primary-soft-hover: #C4D0F5;  /* deeper container for hover */
-  --color-primary-ring: #B6C4F2;        /* soft indigo focus ring / subtle border */
-  --color-link: #475D92;                /* primary indigo — links (AA on white) */
-  /* Accent unified to primary indigo (matches the chosen sample's CTAs) */
-  --color-accent: #475D92;
-  --color-accent-hover: #3B4E80;
-  /* Tertiary — M3 accent used sparingly (e.g. Email verified badge) */
-  --color-tertiary-container: #FFD7F2;
-  --color-on-tertiary-container: #5B3D5B;
-  --color-secondary: #475D92;
-  --color-secondary-soft: #DDE2F9;
-  --color-page: #FAF8FF;                /* M3 surface — page background */
+  --color-primary-soft: #D4E9C9;        /* primary container — soft fills, selected, badges */
+  --color-primary-soft-hover: #C3DDB5;  /* deeper green for hover */
+  --color-primary-ring: #D4E9C9;        /* soft green focus ring */
+  --color-link: #4C6444;                /* sage links (AA on white) */
+  --color-accent: #4C6444;
+  --color-accent-hover: #3F5538;
+  /* Secondary deep teal — used sparingly (e.g. Email verified badge) */
+  --color-secondary: #386667;
+  --color-secondary-soft: #DCEFED;
+  --color-tertiary-container: #DCEFED;  /* email badge container (teal, not pink) */
+  --color-on-tertiary-container: #002021;
+  --color-page: #FDFDF7;                /* surface — main page background */
   --color-bg: #FFFFFF;                  /* surfaces / cards */
-  --color-bg-secondary: #EEEDF4;        /* M3 surface-container — subtle sections */
-  --color-bg-tertiary: #EAE9F1;         /* M3 surface-container-high — neutral fills */
-  --color-text: #1A1B21;                /* M3 on-surface */
-  --color-text-secondary: #44464F;      /* M3 on-surface-variant */
-  --color-text-muted: #74777F;          /* M3 outline — faint / placeholder text */
-  --color-border: #C4C6D0;              /* M3 outline-variant */
-  --color-border-hover: #AEB0BA;
+  --color-bg-secondary: #F7F8F0;        /* soft section background */
+  --color-bg-tertiary: #F0F2EA;         /* chip / neutral container */
+  --color-text: #1A1C18;                /* main text */
+  --color-text-secondary: #62665D;      /* muted text */
+  --color-text-muted: #7A7F75;          /* subtle / placeholder text */
+  --color-border: #C5C8BD;              /* outline / borders */
+  --color-border-hover: #A9AEA2;        /* stronger outline */
   --color-success: #16A34A;
   --color-warning: #D97706;
   --color-error: #DC2626;
@@ -170,14 +169,14 @@ a:hover {
 }
 
 .nav-text-link:hover {
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   text-decoration: none;
 }
 
 /* Header primary action: single soft teal pill */
 .nav-cta {
-  background: var(--color-primary-soft);              /* #DAE2FF — M3 primary-container */
-  color: var(--color-primary-active);                 /* #324577 — readable indigo on container */
+  background: var(--color-primary-soft);              /* #D4E9C9 — sage container */
+  color: var(--color-primary-active);                 /* #0B2008 — dark text on soft green */
   border: none;                                       /* flat, minimal */
   border-radius: 999px;
   padding: 10px 20px;
@@ -232,7 +231,7 @@ a:hover {
 .nav-logo {
   font-size: var(--font-size-lg);
   font-weight: 700;
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   text-decoration: none;
 }
 
@@ -566,7 +565,10 @@ select.form-input {
 .hero {
   text-align: center;
   padding: 0 var(--space-6);
-  background: var(--color-page);
+  background:
+    radial-gradient(720px 280px at 18% -10%, rgba(212, 233, 201, 0.55), transparent 60%),
+    radial-gradient(680px 260px at 88% -20%, rgba(220, 239, 237, 0.50), transparent 60%),
+    linear-gradient(180deg, #F7F8F0 0%, #FDFDF7 100%);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -601,7 +603,7 @@ select.form-input {
   gap: 0;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 14px;
+  border-radius: 26px;
   padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
   text-align: left;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -694,13 +696,13 @@ select.form-input {
   align-items: center;
   gap: 10px;
   padding: 10px 22px;
-  border: 1px solid var(--color-primary-ring);
+  border: 1px solid var(--color-border);
   border-radius: 999px;
   font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text);
   transition: all 0.2s ease;
-  background: var(--color-primary-soft);
+  background: var(--color-bg-tertiary);
 }
 
 .popular-chip svg {
@@ -711,7 +713,7 @@ select.form-input {
 .popular-chip:hover {
   border-color: var(--color-primary);
   color: var(--color-text);
-  background: var(--color-primary-soft-hover);
+  background: var(--color-primary-soft);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(var(--brand-rgb), 0.12);
 }
@@ -750,7 +752,7 @@ select.form-input {
   height: 40px;
   border-radius: 10px;
   background: var(--color-primary-soft);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -810,7 +812,7 @@ select.form-input {
   height: 52px;
   border-radius: 14px;
   background: var(--color-primary-soft);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -981,7 +983,7 @@ select.form-input {
 
 .coach-card.selected {
   border-color: var(--color-primary);
-  background: rgba(var(--brand-rgb), 0.06);
+  background: var(--color-primary-soft);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
@@ -1012,7 +1014,7 @@ select.form-input {
 }
 
 .coach-card-open:hover {
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   background: var(--color-bg-tertiary);
 }
 
@@ -1048,15 +1050,15 @@ select.form-input {
   padding: 2px var(--space-2);
   font-size: var(--font-size-xs);
   font-weight: 500;
-  background: #F8FAFC;
-  color: #334155;
-  border: 1px solid #E2E8F0;
+  background: var(--color-bg-tertiary);
+  color: #44483F;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   transition: background 0.15s;
 }
 
 .skill-tag:hover {
-  background: #F1F5F9;
+  background: #E6EADD;
 }
 
 /* "+N more" chip on compact cards — muted, borderless */
@@ -1106,7 +1108,7 @@ select.form-input {
 
 .detail-open-link {
   font-size: var(--font-size-sm);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   padding: var(--space-1) var(--space-3);
   border: 1px solid var(--color-primary);
   border-radius: var(--border-radius);
@@ -1115,8 +1117,8 @@ select.form-input {
 }
 
 .detail-open-link:hover {
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  background: var(--color-bg-tertiary);
+  color: var(--color-primary);
 }
 
 .detail-meta {
@@ -1161,7 +1163,7 @@ select.form-input {
 .mobile-back-btn {
   display: none;
   font-size: var(--font-size-sm);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   padding: var(--space-2) 0;
   margin-bottom: var(--space-4);
 }
@@ -1186,7 +1188,7 @@ select.form-input {
 
 .profile-back {
   font-size: var(--font-size-sm);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   text-decoration: none;
 }
 
@@ -1293,18 +1295,18 @@ select.form-input {
   position: relative;
 }
 
-/* Profile reviewed — strongest trust signal (amber) */
+/* Profile reviewed — strongest trust signal (sage container) */
 .badge-verified {
   background: var(--color-primary-soft);
   color: var(--color-primary-active);
-  border: 1px solid var(--color-primary-ring);
+  border: 1px solid rgba(76, 100, 68, 0.22);
 }
 
-/* Email verified — secondary signal, M3 tertiary container (distinct from indigo) */
+/* Email verified — secondary signal, deep-teal container (calm, distinct) */
 .badge-email {
   background: var(--color-tertiary-container);
   color: var(--color-on-tertiary-container);
-  border: 1px solid #F5C0E8;
+  border: 1px solid rgba(56, 102, 103, 0.18);
 }
 
 .badge.small {
@@ -1344,9 +1346,9 @@ select.form-input {
 }
 
 .coach-status-banner.pending {
-  background: #FEF3C7;
-  border: 1px solid #FCD34D;
-  color: #92400E;
+  background: #FFE8B6;
+  border: 1px solid rgba(122, 92, 0, 0.18);
+  color: #5E4200;
 }
 
 .coach-status-banner.approved {
@@ -1389,7 +1391,10 @@ select.form-input {
 .btc-hero {
   text-align: center;
   padding: 0 var(--space-6);
-  background: var(--color-page);
+  background:
+    radial-gradient(720px 280px at 18% -10%, rgba(212, 233, 201, 0.55), transparent 60%),
+    radial-gradient(680px 260px at 88% -20%, rgba(220, 239, 237, 0.50), transparent 60%),
+    linear-gradient(180deg, #F7F8F0 0%, #FDFDF7 100%);
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -1598,7 +1603,7 @@ select.form-input {
 .btc-cta-section {
   text-align: center;
   padding: 64px var(--space-6);
-  background: linear-gradient(135deg, #2B3357 0%, #1A1B2E 100%);
+  background: linear-gradient(135deg, #1A1C18 0%, #11130F 100%);
   margin-top: 0;
 }
 
@@ -1838,7 +1843,7 @@ select.form-input {
 /* "Add as new skill" option at bottom of dropdown */
 .skill-suggestion-create {
   border-top: 1px solid var(--color-border-light, #eee);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   font-weight: 500;
   gap: var(--space-2);
 }
@@ -1999,7 +2004,7 @@ select.form-input {
 .stat-value {
   font-size: var(--font-size-3xl);
   font-weight: 700;
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   line-height: 1;
   margin-bottom: var(--space-2);
 }
@@ -2030,7 +2035,7 @@ select.form-input {
 }
 
 .tab.active {
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   border-bottom-color: var(--color-primary);
 }
 
@@ -2058,7 +2063,7 @@ select.form-input {
 
 .session-status.new {
   background: var(--color-primary-soft);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
 }
 
 .session-status.sent {
@@ -2419,7 +2424,7 @@ select.form-input {
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   font-size: var(--font-size-lg);
   flex-shrink: 0;
   overflow: hidden;
@@ -2704,7 +2709,7 @@ select.form-input {
   word-break: break-word;
 }
 .profile-view-value a {
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   text-decoration: underline;
 }
 .profile-view-empty {
@@ -2731,7 +2736,7 @@ select.form-input {
   height: 48px;
   border-radius: 50%;
   background: var(--color-primary-light, #DAE2FF);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2841,7 +2846,7 @@ select.form-input {
 
 .profile-toast.info {
   background: var(--color-primary-soft);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   border: 1px solid var(--color-primary-ring);
 }
 
@@ -2900,8 +2905,8 @@ select.form-input {
 }
 
 .pending-edit-status.pending {
-  background: #fef3c7;
-  color: #92400e;
+  background: #FFE8B6;
+  color: #5E4200;
 }
 
 .pending-edit-status.approved {
@@ -2916,7 +2921,7 @@ select.form-input {
 
 .pending-edit-status.new {
   background: var(--color-primary-soft);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
 }
 
 .pending-edit-status.reviewed {
@@ -3136,12 +3141,12 @@ select.form-input {
 
 .badge-info {
   background: var(--color-primary-soft);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
 }
 
 .badge-warning {
-  background: #fef3c7;
-  color: #92400e;
+  background: #FFE8B6;
+  color: #5E4200;
 }
 
 /* ============================================
@@ -3164,7 +3169,7 @@ select.form-input {
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-xs);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   background: transparent;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -3274,7 +3279,7 @@ select.form-input {
 .ai-skill-tag {
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-xs);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   background: rgba(var(--brand-rgb), 0.08);
   border: 1px solid rgba(var(--brand-rgb), 0.2);
   border-radius: 999px;
@@ -3301,7 +3306,7 @@ select.form-input {
   gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
   font-size: var(--font-size-sm);
-  color: var(--color-primary-active);
+  color: var(--color-primary);
   background: var(--color-primary-soft-hover);
   border: 1px solid var(--color-primary-ring);
   border-radius: 999px;
